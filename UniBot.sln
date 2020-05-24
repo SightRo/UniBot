@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniBot.Example", "UniBot.Example\UniBot.Example.csproj", "{4A074A81-25AB-45E9-A2E6-9B5438159B0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniBot.Core", "UniBot.Core\UniBot.Core.csproj", "{272B17B8-5C6E-4F7C-9044-87D4CAF684D1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A074A81-25AB-45E9-A2E6-9B5438159B0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A074A81-25AB-45E9-A2E6-9B5438159B0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A074A81-25AB-45E9-A2E6-9B5438159B0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A074A81-25AB-45E9-A2E6-9B5438159B0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{272B17B8-5C6E-4F7C-9044-87D4CAF684D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{272B17B8-5C6E-4F7C-9044-87D4CAF684D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{272B17B8-5C6E-4F7C-9044-87D4CAF684D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{272B17B8-5C6E-4F7C-9044-87D4CAF684D1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
