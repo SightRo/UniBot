@@ -24,7 +24,7 @@ namespace UniBot.Core.Helpers
                     break;
                 case false:
                     if (link != null)
-                        throw new Exception("Replay button have no link");
+                        throw new ArgumentException("Replay button have no link", nameof(link));
                     _replyButtons.Value[_currentLine].Add(new ReplyButton(text));
                     break;
             }
@@ -52,7 +52,7 @@ namespace UniBot.Core.Helpers
         public KeyboardBuilder SetOneTime(bool isOneTime)
         {
             if (_isInline && isOneTime)
-                throw new ArgumentException("Inline keyboard can't be one time");
+                throw new ArgumentException("Inline keyboard can't be one time", nameof(isOneTime));
 
             _isOneTime = isOneTime;
 
