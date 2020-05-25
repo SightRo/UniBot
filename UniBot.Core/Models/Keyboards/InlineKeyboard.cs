@@ -2,7 +2,7 @@
 
 namespace UniBot.Core.Models.Keyboards
 {
-    public class InlineKeyboard
+    public class InlineKeyboard : IKeyboard
     {
         public InlineKeyboard(List<List<InlineButton>> buttons)
             => Buttons = buttons;
