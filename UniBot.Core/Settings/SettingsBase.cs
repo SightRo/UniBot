@@ -1,7 +1,7 @@
 ﻿namespace UniBot.Core.Settings
 {
     // TODO Make validation.
-    public class SettingBase
+    public class SettingsBase
     {
         public bool IsEnabled { get; set; } = true;
         public string Token { get; set; } = null!;
