@@ -9,11 +9,11 @@ namespace UniBot.Core.Abstraction
     {
         ConcurrentDictionary<string, long> Owners { get; }
         ConcurrentDictionary<string, long[]> Admins { get; }
-        ConcurrentDictionary<string, IAction> Actions { get; }
+        ConcurrentDictionary<string, CommandBase> Commands { get; }
         
         IConfiguration Configuration { get; }
         
-        Task ProcessUpdate(UpdateContext context);
+        void ProcessUpdate(UpdateContext context);
         IMessenger ResolveMessenger(string name);
     }
 }
