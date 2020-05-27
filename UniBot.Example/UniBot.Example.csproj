@@ -6,7 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers" />
+      <ProjectReference Include="..\UniBot.Core\UniBot.Core.csproj" />
+      <ProjectReference Include="..\UniBot.Telegram\UniBot.Telegram.csproj" />
     </ItemGroup>
 
 

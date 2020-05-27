@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using UniBot.Core.Abstraction;
 
 namespace UniBot.Example
 {
@@ -26,6 +27,7 @@ namespace UniBot.Example
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSingleton<IBot>(provider => new Bot(Configuration).Init(services));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
