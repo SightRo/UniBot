@@ -25,7 +25,7 @@ namespace UniBot.Telegram
 
             services.AddSingleton<ITelegramBotClient>(api);
 
-            api.SetWebhookAsync("").GetAwaiter().GetResult();
+            api.SetWebhookAsync("https://justanotherapptotest1001.herokuapp.com/" + Constants.Endpoint).GetAwaiter().GetResult();
             
             messenger = new TgMessenger(api, tgSettings);
             settings = tgSettings;
