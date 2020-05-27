@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,6 +12,7 @@ using UniBot.Core.Models;
 using UniBot.Core.Models.Attachments;
 using UniBot.Core.Models.Keyboards;
 using Chat = UniBot.Core.Models.Chat;
+using User = UniBot.Core.Models.User;
 using TgMessage = Telegram.Bot.Types.Message;
 using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
