@@ -14,5 +14,6 @@ namespace UniBot.Core.Abstraction
         IConfiguration Configuration { get; }
         
         Task ProcessUpdate(UpdateContext context);
+        IMessenger ResolveMessenger(string name);
     }
 }
