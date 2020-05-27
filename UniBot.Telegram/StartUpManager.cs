@@ -15,7 +15,7 @@ namespace UniBot.Telegram
             var config = bot.Configuration;
             var tgSettings = new TgSettings();
             
-            config.GetSection(Constants.Name).Bind(tgSettings);
+            config.GetSection("Messengers:"+Constants.Name).Bind(tgSettings);
             services.AddSingleton(tgSettings);
 
             var proxy = GetProxy(tgSettings);
