@@ -28,6 +28,12 @@ namespace UniBot.Telegram
         private TgSettings _settings = null!;
         public string Name => Constants.Name;
 
+        public TgMessenger(ITelegramBotClient api, TgSettings settings)
+        {
+            _api = api;
+            _settings = settings;
+        }
+        
         public async Task<IEnumerable<long>> SendMessage(long chatId, OutMessage message)
         {
             var result = new List<long>(message.Attachments.Length + 1);
