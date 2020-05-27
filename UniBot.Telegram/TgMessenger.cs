@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,7 +15,6 @@ using Chat = UniBot.Core.Models.Chat;
 using TgMessage = Telegram.Bot.Types.Message;
 using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
-using User = UniBot.Core.Models.User;
 
 namespace UniBot.Telegram
 {
@@ -26,7 +25,7 @@ namespace UniBot.Telegram
     {
         private ITelegramBotClient _api = null!;
         private TgSettings _settings = null!;
-        public string Name { get; } = "Telegram";
+        public string Name => Constants.Name;
 
         public async Task<IEnumerable<long>> SendMessage(long chatId, OutMessage message)
         {
