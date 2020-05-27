@@ -37,7 +37,7 @@ namespace UniBot.Core.Abstraction
             var assemblies = AppDomain.CurrentDomain
                                     .GetAssemblies()
                                     .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
-
+            
             foreach (var assembly in assemblies)
             {
                 builder.AddApplicationPart(assembly);
@@ -48,21 +48,21 @@ namespace UniBot.Core.Abstraction
                 
                 managers.Add(temp);
             }
-
+            
             foreach (var manager in managers)
             {
                 manager.Init(this, services, out var messenger, out var settings);
                 if (!settings.IsEnabled)
                     continue;
-
-                Owners.TryAdd(messenger.Name, settings.BotOwnerId);
-                Admins.TryAdd(messenger.Name, settings.BotAdminIds);
+            
+                //Owners.TryAdd(messenger.Name, settings.BotOwnerId);
+                //Admins.TryAdd(messenger.Name, settings.BotAdminIds);
             }
 
-            var commands = AppDomain.CurrentDomain
+            var Commands = AppDomain.CurrentDomain
                                     .GetAssemblies()
                                     .SelectMany(ass => ass.GetTypes())
-                                    .Where(x => x.IsAssignableFrom(typeof(CommandBase)) && !x.IsInterface && !x.IsAbstract)
+                                    .Where(x => string.Compare(typeof(CommandBase).ToString(), x?.BaseType?.ToString() ?? string.Empty) == 0 && !x.IsInterface && !x.IsAbstract)
                                     .Select(x => (CommandBase) Activator.CreateInstance(x)!)
                                     .ToDictionary(x => x.Name);
 
