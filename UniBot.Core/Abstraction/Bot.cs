@@ -53,8 +53,8 @@ namespace UniBot.Core.Abstraction
         internal void RegisterAdmins(string messenger, long[] ids)
             => AddToDictionary(_admins, messenger, ids);
 
-        internal void RegisterMessenger(string messengerName, IMessenger messenger)
-            => AddToDictionary(_messengers, messengerName, messenger);
+        internal void RegisterMessenger(IMessenger messenger)
+            => AddToDictionary(_messengers, messenger.Name, messenger);
 
         internal void RegisterCommand(CommandBase command)
             => AddToDictionary(_commands, command.Name, command);
