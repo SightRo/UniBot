@@ -31,7 +31,7 @@ namespace UniBot.Core.Abstraction
 
         public void ProcessUpdate(UpdateContext context)
         {
-            if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
+            if (context?.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
                 GetCommand(commandName)?.Execute(context);
         }
 
