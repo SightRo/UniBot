@@ -23,11 +23,11 @@ namespace UniBot.Telegram
                 ? new TelegramBotClient(tgSettings.Token, proxy)
                 : new TelegramBotClient(tgSettings.Token);
 
-            api.SendTextMessageAsync(394131989, "He").GetAwaiter().GetResult();
+            //api.SendTextMessageAsync(394131989, "He").GetAwaiter().GetResult();
 
-            services.AddSingleton<ITelegramBotClient>(api);
+            services.AddSingleton<ITelegramBotClient>(_ => api);
 
-            api.SetWebhookAsync("https://justanotherapptotest1001.herokuapp.com/" + Constants.Endpoint).GetAwaiter().GetResult();
+            //api.SetWebhookAsync("https://justanotherapptotest1001.herokuapp.com/" + Constants.Endpoint).GetAwaiter().GetResult();
             
             messenger = new TgMessenger(api, tgSettings);
             settings = tgSettings;
