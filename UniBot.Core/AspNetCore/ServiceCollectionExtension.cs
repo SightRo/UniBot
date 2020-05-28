@@ -24,15 +24,15 @@ namespace UniBot.Core.AspNetCore
                                       .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
 
             var builder = services.AddControllers();
-            var managers = new List<IStartupManager>();
+            var managers = new List<IMessengerStartup>();
             
             foreach (var assembly in assemblies)
             {
                 // TODO Error handling.
                 builder.AddApplicationPart(assembly);
                 var startup = assembly.GetTypes()
-                                      .Where(x => x.GetInterface(nameof(IStartupManager)) != null && !x.IsAbstract && !x.IsInterface)
-                                      .Select(x => (IStartupManager)Activator.CreateInstance(x)!)
+                                      .Where(x => x.GetInterface(nameof(IMessengerStartup)) != null && !x.IsAbstract && !x.IsInterface)
+                                      .Select(x => (IMessengerStartup)Activator.CreateInstance(x)!)
                                       .First();
                 
                 managers.Add(startup);
