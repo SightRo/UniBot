@@ -9,4 +9,8 @@
       <ProjectReference Include="..\UniBot.Core\UniBot.Core.csproj" />
       <ProjectReference Include="..\UniBot.Telegram\UniBot.Telegram.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.4" />
+    </ItemGroup>
 </Project>
