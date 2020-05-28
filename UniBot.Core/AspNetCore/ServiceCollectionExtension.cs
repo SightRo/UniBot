@@ -44,6 +44,7 @@ namespace UniBot.Core.AspNetCore
                 if (!settings.IsEnabled)
                     continue;
 
+                bot.RegisterMessenger(messenger);
                 bot.RegisterOwner(messenger.Name, settings.BotOwnerId);
                 bot.RegisterAdmins(messenger.Name, settings.BotAdminIds);
             }
