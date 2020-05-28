@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using UniBot.Core.Abstraction;
+using UniBot.Core.AspNetCore;
 
 namespace UniBot.Example
 {
@@ -27,9 +28,10 @@ namespace UniBot.Example
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddSingleton<IBot>(provider => new Bot(Configuration).Init(services));
-            services.Init(Configuration);
             services.AddControllers();
+            
+            services.AddBot(Configuration)
+                    .DetectCommands();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
