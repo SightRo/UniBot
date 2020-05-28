@@ -84,4 +84,47 @@ namespace UniBot.Core.Abstraction
                 throw new Exception("Messenger is missed.");
         }
     }
+
+    public static class BotExtension
+    {
+        public static void Init(this IServiceCollection services, IConfiguration config)
+        {
+            var builder = services.AddControllers();
+            var bot = new Bot(config);
+            
+            services.AddSingleton<IBot>(bot);
+            List<IStartUpManager> managers = new List<IStartUpManager>();
+            var assemblies = AppDomain.CurrentDomain
+                                      .GetAssemblies()
+                                      .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
+            
+            foreach (var assembly in assemblies)
+            {
+                builder.AddApplicationPart(assembly);
+                var temp = assembly.GetTypes()
+                                   .Where(x => x.GetInterface(nameof(IStartUpManager)) != null && !x.IsInterface && !x.IsAbstract)
+                                   .Select(x => (IStartUpManager) Activator.CreateInstance(x)!)
+                                   .First();
+                
+                managers.Add(temp);
+            }
+            
+            foreach (var manager in managers)
+            {
+                manager.Init(bot, services, out var messenger, out var settings);
+                if (!settings.IsEnabled)
+                    continue;
+            
+                //Owners.TryAdd(messenger.Name, settings.BotOwnerId);
+                //Admins.TryAdd(messenger.Name, settings.BotAdminIds);
+            }
+
+            var Commands = AppDomain.CurrentDomain
+                                    .GetAssemblies()
+                                    .SelectMany(ass => ass.GetTypes())
+                                    .Where(x => string.Compare(typeof(CommandBase).ToString(), x?.BaseType?.ToString() ?? string.Empty) == 0 && !x.IsInterface && !x.IsAbstract)
+                                    .Select(x => (CommandBase) Activator.CreateInstance(x)!)
+                                    .Select(Commands.);
+        }
+    }
 }
