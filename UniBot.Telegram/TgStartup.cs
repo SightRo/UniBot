@@ -9,7 +9,7 @@ using UniBot.Core.Settings;
 
 namespace UniBot.Telegram
 {
-    public class TgStartupManager : IStartupManager
+    public class TgStartup : IMessengerStartup
     {
         public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out SettingsBase settings)
         {
