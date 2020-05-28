@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MihaZupan;
@@ -8,26 +9,23 @@ using UniBot.Core.Settings;
 
 namespace UniBot.Telegram
 {
-    public class TgStartUpManager : IStartUpManager
+    public class TgStartupManager : IStartupManager
     {
         public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out SettingsBase settings)
         {
-            var config = bot.Configuration;
             var tgSettings = new TgSettings();
-            
-            config.GetSection("Messengers:"+Constants.Name).Bind(tgSettings);
-            services.AddSingleton(tgSettings);
+            // TODO Error handling.
+            bot.Settings.Messengers[Constants.Name].Bind(tgSettings);
 
             var proxy = GetProxy(tgSettings);
             var api = proxy != null
                 ? new TelegramBotClient(tgSettings.Token, proxy)
                 : new TelegramBotClient(tgSettings.Token);
 
-            //api.SendTextMessageAsync(394131989, "He").GetAwaiter().GetResult();
+            services.AddSingleton<ITelegramBotClient>(api);
+            services.AddSingleton(tgSettings);
 
-            services.AddSingleton<ITelegramBotClient>(_ => api);
-
-            //api.SetWebhookAsync("https://justanotherapptotest1001.herokuapp.com/" + Constants.Endpoint).GetAwaiter().GetResult();
+            api.SetWebhookAsync(bot.Settings.Endpoint + Constants.Endpoint).GetAwaiter().GetResult();
             
             messenger = new TgMessenger(api, tgSettings);
             settings = tgSettings;
@@ -40,7 +38,7 @@ namespace UniBot.Telegram
 
             var socks5 = settings.Socks5;
             
-            return socks5.Username == null 
+            return socks5.Username == null || socks5.Password == null
                 ? new HttpToSocks5Proxy(socks5.Hostname, socks5.Port) 
                 : new HttpToSocks5Proxy(socks5.Hostname, socks5.Port, socks5.Username, socks5.Password);
         }
