@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,22 +7,27 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
+using UniBot.Core.Settings;
 
 namespace UniBot.Core.Abstraction
 {
     public class Bot : IBot
     {
+        private readonly Dictionary<string, long> _owners = new Dictionary<string, long>();
+        private readonly Dictionary<string, long[]> _admins = new Dictionary<string, long[]>();
+        private readonly Dictionary<string, CommandBase> _commands = new Dictionary<string, CommandBase>();
+        private readonly Dictionary<string, IMessenger> _messengers = new Dictionary<string, IMessenger>();
+
         public Bot(IConfiguration configuration)
         {
-            Configuration = configuration;
+            configuration.GetSection("BotSettings").Bind(Settings);
         }
-        
-        public IConfiguration Configuration { get; }
-        
-        public ConcurrentDictionary<string, long> Owners { get; private set; }
-        public ConcurrentDictionary<string, long[]> Admins { get; private set; }
-        public ConcurrentDictionary<string, CommandBase> Commands { get; private set; }
-        public ConcurrentDictionary<string, IMessenger> Messengers { get; private set; }
+
+        public BotSettings Settings { get; } = new BotSettings();
+        public IReadOnlyDictionary<string, long> Owners => _owners;
+        public IReadOnlyDictionary<string, long[]> Admins => _admins;
+        public IReadOnlyDictionary<string, CommandBase> Commands => _commands;
+        public IReadOnlyDictionary<string, IMessenger> Messengers => _messengers;
 
         public void ProcessUpdate(UpdateContext context)
         {
