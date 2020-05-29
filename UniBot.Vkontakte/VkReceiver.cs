@@ -55,10 +55,13 @@ namespace UniBot.Vkontakte
         // New to process with foreach.
         private async Task<InMessage> ConvertMessage(VkMessage message)
         {
-            var forwadedMessages = new List<InMessage>(message.ForwardedMessages.Count);
-            
-            foreach (var forwarded in message.ForwardedMessages)
-                forwadedMessages.Add(await ConvertMessage(message));
+            var forwardedMessages = new List<InMessage>();
+
+            if (message.ForwardedMessages != null)
+            {
+                foreach (var forwarded in message.ForwardedMessages)
+                    forwardedMessages.Add(await ConvertMessage(message));
+            }
             
             return new InMessage
             {
@@ -68,7 +71,7 @@ namespace UniBot.Vkontakte
                 Chat = await _messenger.GetChat(message.ChatId ?? message!.PeerId!.Value),
                 Text = message.Text,
                 Reply = await ConvertMessage(message.ReplyMessage),
-                Forwarded = forwadedMessages.ToArray(),
+                Forwarded = forwardedMessages.ToArray(),
                 Attachments = message.Attachments.Select(ConvertAttachment).ToArray(),
                 MessengerSource = Name
             };
