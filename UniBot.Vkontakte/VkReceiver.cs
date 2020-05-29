@@ -33,15 +33,11 @@ namespace UniBot.Vkontakte
         [HttpPost]
         public async Task<IActionResult> UpdateReceiver([FromBody] Update update)
         { 
-            using (StreamReader stream = new StreamReader(HttpContext.Request.Body))
-            {
-                string body = stream.ReadToEnd();
-                await _messenger.SendMessage(393592868, new OutMessage(body));
-            }
+                //await _messenger.SendMessage(393592868, new OutMessage("Brah"));
             switch (update.Type)
             {
                 case "confirmation":
-                    return Ok(_settings.Token);
+                    return Ok(_settings.Confirmation);
                 case "message_new":
                     var context = await ConvertFromMessage(update.Object.ToObject<VkMessage>());
                     _bot.ProcessUpdate(context);

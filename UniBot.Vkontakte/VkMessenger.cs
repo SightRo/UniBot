@@ -63,7 +63,9 @@ namespace UniBot.Vkontakte
                     {
                         InlineKeyboard inlineKeyboard => ConvertInlineKeyboard(inlineKeyboard),
                         ReplyKeyboard replyKeyboard => ConvertReplyKeyboard(replyKeyboard),
-                        _ => new MessageKeyboard()
+                        _ => message.RemoveReplyKeyboard ? new MessageKeyboard() 
+                        { Buttons = new IEnumerable<MessageKeyboardButton>[0] }
+                            : null
                     },
                     Attachments = attachments
                 })
