@@ -8,6 +8,7 @@
     <ItemGroup>
       <ProjectReference Include="..\UniBot.Core\UniBot.Core.csproj" />
       <ProjectReference Include="..\UniBot.Telegram\UniBot.Telegram.csproj" />
+      <ProjectReference Include="..\UniBot.Vkontakte\UniBot.Vkontakte.csproj" />
     </ItemGroup>
 
     <ItemGroup>
