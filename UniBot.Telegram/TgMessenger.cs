@@ -23,13 +23,15 @@ namespace UniBot.Telegram
     {
         private readonly ITelegramBotClient _api;
         private readonly TgSettings _settings;
-        public string Name => Constants.Name;
 
         public TgMessenger(ITelegramBotClient api, TgSettings settings)
         {
             _api = api;
             _settings = settings;
         }
+
+        public string Name => Constants.Name;
+
         
         public async Task<IEnumerable<long>> SendMessage(long chatId, OutMessage message)
         {
