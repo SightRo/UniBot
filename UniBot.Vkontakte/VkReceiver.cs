@@ -21,10 +21,10 @@ namespace UniBot.Vkontakte
         private VkMessenger _messenger;
         private VkSettings _settings;
 
-        public VkReceiver(IBot bot, VkMessenger messenger, VkSettings settings)
+        public VkReceiver(IBot bot, VkSettings settings)
         {
             _bot = bot;
-            _messenger = messenger;
+            _messenger = bot.ResolveMessenger(Name) as VkMessenger;
             _settings = settings;
         }
 
