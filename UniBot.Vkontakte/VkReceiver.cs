@@ -8,7 +8,10 @@ using Newtonsoft.Json;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Models;
 using UniBot.Core.Models.Attachments;
+using VkNet.Abstractions;
 using VkNet.Model.Attachments;
+using VkNet.Model.GroupUpdate;
+using VkNet.Utils;
 using VkMessage = VkNet.Model.Message;
 
 namespace UniBot.Vkontakte
@@ -25,8 +28,9 @@ namespace UniBot.Vkontakte
         public VkReceiver(IBot bot, VkSettings settings)
         {
             _bot = bot;
-            _messenger = bot.ResolveMessenger(Name) as VkMessenger;
             _settings = settings;
+            _messenger = bot.ResolveMessenger(Name) as VkMessenger;
+
         }
 
         // TODO Check out GroupUpdate class.
@@ -39,7 +43,7 @@ namespace UniBot.Vkontakte
                 case "confirmation":
                     return Ok(_settings.Confirmation);
                 case "message_new":
-                    var context = await ConvertFromMessage(update.Object.ToObject<VkMessage>());
+                    var context = await ConvertFromMessage(VkMessage.FromJson(new VkResponse(update.Object)));
                     _bot.ProcessUpdate(context);
                     break;
             }
@@ -55,15 +59,14 @@ namespace UniBot.Vkontakte
 
         // TODO Forward messages are missing now.
         // New to process with foreach.
-        private async Task<InMessage> ConvertMessage(VkMessage message)
+        private async Task<InMessage?> ConvertMessage(VkMessage message)
         {
+            if (message == null)
+                return null;
+            
             var forwardedMessages = new List<InMessage>();
-
-            if (message.ForwardedMessages != null)
-            {
-                foreach (var forwarded in message.ForwardedMessages)
-                    forwardedMessages.Add(await ConvertMessage(message));
-            }
+            foreach (var forwarded in message.ForwardedMessages)
+                forwardedMessages.Add(await ConvertMessage(message));
             
             return new InMessage
             {
@@ -78,7 +81,7 @@ namespace UniBot.Vkontakte
                 MessengerSource = Name
             };
         }
-        
+
         private InAttachment? ConvertAttachment(Attachment attachment)
         {
             (AttachmentType, string) res = attachment.Instance switch
