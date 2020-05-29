@@ -22,6 +22,7 @@ namespace UniBot.Vkontakte
             {
                 AccessToken = vkSettings.Token,
             });
+            api.RequestsPerSecond = 20;
 
             services.AddSingleton<IVkApi>(api);
             services.AddSingleton<VkSettings>(vkSettings);
