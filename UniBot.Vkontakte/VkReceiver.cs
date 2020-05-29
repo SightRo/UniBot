@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,12 @@ namespace UniBot.Vkontakte
         // TODO Check out GroupUpdate class.
         [HttpPost]
         public async Task<IActionResult> UpdateReceiver([FromBody] Update update)
-        {
+        { 
+            using (StreamReader stream = new StreamReader(HttpContext.Request.Body))
+            {
+                string body = stream.ReadToEnd();
+                await _messenger.SendMessage(393592868, new OutMessage(body));
+            }
             switch (update.Type)
             {
                 case "confirmation":
