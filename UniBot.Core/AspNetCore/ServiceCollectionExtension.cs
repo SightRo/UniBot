@@ -14,7 +14,9 @@ namespace UniBot.Core.AspNetCore
     {
         public static IBotBuilder AddBot(this IServiceCollection services, IConfiguration config)
         {
-            var bot = new Bot(config);
+            var botSettings = new BotSettings();
+            config.GetSection("BotSettings").Bind(botSettings);
+            var bot = new Bot(botSettings);
 
             services.AddSingleton<BotSettings>(bot.Settings);
             services.AddSingleton<IBot>(bot);

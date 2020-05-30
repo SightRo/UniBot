@@ -18,12 +18,12 @@ namespace UniBot.Core.Abstraction
         private readonly Dictionary<string, CommandBase> _commands = new Dictionary<string, CommandBase>();
         private readonly Dictionary<string, IMessenger> _messengers = new Dictionary<string, IMessenger>();
 
-        public Bot(IConfiguration configuration)
+        public Bot(BotSettings settings)
         {
-            configuration.GetSection("BotSettings").Bind(Settings);
+            Settings = settings;
         }
 
-        public BotSettings Settings { get; } = new BotSettings();
+        public BotSettings Settings { get; }
         public IReadOnlyDictionary<string, long> Owners => _owners;
         public IReadOnlyDictionary<string, long[]> Admins => _admins;
         public IReadOnlyDictionary<string, CommandBase> Commands => _commands;
