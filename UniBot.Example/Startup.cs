@@ -31,6 +31,7 @@ namespace UniBot.Example
             services.AddControllers().AddNewtonsoftJson();
             
             services.AddBot(Configuration)
+                    .DetectMessengerImplementations()
                     .DetectCommands();
         }
 

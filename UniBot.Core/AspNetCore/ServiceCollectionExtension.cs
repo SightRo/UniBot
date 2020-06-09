@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,43 +15,14 @@ namespace UniBot.Core.AspNetCore
         public static IBotBuilder AddBot(this IServiceCollection services, IConfiguration config)
         {
             var botSettings = new BotSettings();
+            // TODO Change way of getting bot settings;
             config.GetSection("BotSettings").Bind(botSettings);
             var bot = new Bot(botSettings);
 
             services.AddSingleton<BotSettings>(bot.Settings);
             services.AddSingleton<IBot>(bot);
 
-            var assemblies = AppDomain.CurrentDomain
-                                      .GetAssemblies()
-                                      .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
-
-            var builder = services.AddControllers();
-            var managers = new List<IMessengerStartup>();
-            
-            foreach (var assembly in assemblies)
-            {
-                // TODO Error handling.
-                builder.AddApplicationPart(assembly);
-                var startup = assembly.GetTypes()
-                                      .Where(x => x.GetInterface(nameof(IMessengerStartup)) != null && !x.IsAbstract && !x.IsInterface)
-                                      .Select(x => (IMessengerStartup)Activator.CreateInstance(x)!)
-                                      .First();
-                
-                managers.Add(startup);
-            }
-
-            foreach (var manager in managers)
-            {
-                manager.Init(bot, services, out var messenger, out var settings);
-                if (!settings.IsEnabled)
-                    continue;
-
-                bot.RegisterMessenger(messenger);
-                bot.RegisterOwner(messenger.Name, settings.BotOwnerId);
-                bot.RegisterAdmins(messenger.Name, settings.BotAdminIds);
-            }
-            
-            return new BotBuilder(bot);
+            return new BotBuilder(bot, services);
         }
     }
 }
