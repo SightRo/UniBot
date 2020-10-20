@@ -21,13 +21,15 @@ namespace UniBot.Core.Helpers
             };
         }
         
-        public static FileAttachment CreateFileAttachment(string fullName, byte[] data, AttachmentType type)
+        public static FileAttachment CreateFileAttachment(string fullName, byte[] data, AttachmentType type = AttachmentType.Unknown)
         {
+            var extension = GetExtension(fullName);
+            
             return new FileAttachment
             {
                 Name = GetName(fullName),
-                Extension = GetExtension(fullName),
-                AttachmentType = type,
+                Extension = extension,
+                AttachmentType = type == AttachmentType.Unknown ? DetectType(extension) : type,
                 Data = data
             };
         }

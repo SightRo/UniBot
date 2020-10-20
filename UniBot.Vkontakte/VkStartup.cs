@@ -12,10 +12,10 @@ namespace UniBot.Vkontakte
 {
     public class VkStartup : IMessengerStartup
     {
-        public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out SettingsBase settings)
+        public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out MessengerOptions settings)
         {
             var vkSettings = new VkSettings();
-            bot.Settings.Messengers[Constants.Name].Bind(vkSettings);
+            bot.Settings.MessengerSettings[Constants.Name].Bind(vkSettings);
             
             var api = new VkApi();
             api.Authorize(new ApiAuthParams

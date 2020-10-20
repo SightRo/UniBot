@@ -2,7 +2,7 @@
 
 namespace UniBot.Telegram
 {
-    public class TgSettings : SettingsBase
+    public class TgSettings : MessengerOptions
     {
         public Socks5? Socks5 { get; set; }
     }

@@ -11,11 +11,11 @@ namespace UniBot.Telegram
 {
     public class TgStartup : IMessengerStartup
     {
-        public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out SettingsBase settings)
+        public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out MessengerOptions settings)
         {
             var tgSettings = new TgSettings();
             // TODO Error handling.
-            bot.Settings.Messengers[Constants.Name].Bind(tgSettings);
+            bot.Settings.MessengerSettings[Constants.Name].Bind(tgSettings);
 
             var proxy = GetProxy(tgSettings);
             var api = proxy != null

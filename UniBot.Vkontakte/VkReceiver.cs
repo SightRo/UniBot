@@ -17,7 +17,7 @@ using VkMessage = VkNet.Model.Message;
 namespace UniBot.Vkontakte
 {
     [Route(Constants.Endpoint)]
-    public class VkReceiver : Controller
+    public class VkReceiver : ControllerBase
     {
         private string Name => Constants.Name;
 

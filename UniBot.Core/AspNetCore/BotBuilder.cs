@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Actions;
 
 namespace UniBot.Core.AspNetCore
 {
-    public class BotBuilder : IBotBuilder
+    public class BotBuilder
     {
         private readonly Bot _bot;
         private readonly IServiceCollection _services;
@@ -20,15 +18,16 @@ namespace UniBot.Core.AspNetCore
             _services = services;
         }
 
-        public IBotBuilder DetectCommands()
+        public BotBuilder DetectCommands()
         {
             // TODO Find an elegant solution.
             var commands = AppDomain.CurrentDomain
                                     .GetAssemblies()
                                     .SelectMany(ass => ass.GetTypes())
-                                    .Where(x => string.CompareOrdinal(typeof(CommandBase).ToString(), x?.BaseType?.ToString() ?? string.Empty) == 0 
-                                                && !x.IsInterface 
-                                                && !x.IsAbstract);
+                                    .Where(x => 
+                                        string.CompareOrdinal(typeof(CommandBase).ToString(), x?.BaseType?.ToString() ?? string.Empty) == 0 
+                                        && !x.IsInterface 
+                                        && !x.IsAbstract);
 
             foreach (var command in commands)
                 AddCommand(command);
@@ -36,62 +35,42 @@ namespace UniBot.Core.AspNetCore
             return this;
         }
 
-        public IBotBuilder AddCommand<TCommand>()
+        public BotBuilder AddCommand<TCommand>()
             where TCommand : CommandBase
         {
             AddCommand(typeof(TCommand));
             return this;
         }
 
-        public IBotBuilder DetectMessengerImplementations()
+        public BotBuilder DetectMessengerImplementations()
         {
             var assemblies = AppDomain.CurrentDomain
                                       .GetAssemblies()
-                                      .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null)
-                                      .ToArray();
+                                      .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
 
             foreach (var assembly in assemblies)
-                AddMessengerStartup(assembly);
+                AddMessengerImplementation(assembly);
 
             return this;
         }
 
-        public IBotBuilder AddMessenger(Assembly assembly)
+        public BotBuilder AddMessengerImplementation(Assembly assembly)
         {
-            // TODO Add some checks here
-            AddMessengerStartup(assembly);
+            _bot.AddMessengerImplementation(assembly);
+            
+            var builder = _services.AddControllers();
+            builder.AddApplicationPart(assembly);
+
             return this;
         }
 
-        // Carefully use;
         private void AddCommand(Type command)
         {
-            var instance = (CommandBase) Activator.CreateInstance(command);
-            _bot.RegisterCommand(instance);
-        }
-
-        private void AddMessengerStartup(Assembly assembly)
-        {
-            var builder = _services.AddControllers();
+            var instance = (CommandBase?) Activator.CreateInstance(command);
+            if (instance == null)
+                throw new Exception("Couldn't create a command instance");
             
-            builder.AddApplicationPart(assembly);
-            var startup = assembly.GetTypes()
-                                  .Where(x => x.GetInterface(nameof(IMessengerStartup)) != null && !x.IsAbstract && !x.IsInterface)
-                                  .Select(x => (IMessengerStartup)Activator.CreateInstance(x)!)
-                                  .First();
-            
-            ActivateMessenger(startup);
-        }
-
-        private void ActivateMessenger(IMessengerStartup messengerStartup)
-        {
-            messengerStartup.Init(_bot, _services, out var messenger, out var settings);
-            if (!settings.IsEnabled)
-                return;
-
-            _bot.RegisterMessenger(messenger);
-            _bot.RegisterOwner(messenger.Name, settings.BotOwnerId);
-            _bot.RegisterAdmins(messenger.Name, settings.BotAdminIds);
+            _bot.AddCommand(instance);
         }
     }
 }

@@ -16,5 +16,7 @@ namespace UniBot.Core.Abstraction
         
         Task<User?> GetUser(long userId);
         Task<Chat?> GetChat(long chatId);
+
+        TNative GetNativeObject<TNative>();
     }
 }

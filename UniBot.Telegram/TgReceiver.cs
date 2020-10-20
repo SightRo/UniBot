@@ -17,7 +17,7 @@ using TgChat = Telegram.Bot.Types.Chat;
 namespace UniBot.Telegram
 {
     [Route(Constants.Endpoint)]
-    public class TgReceiver : Controller
+    public class TgReceiver : ControllerBase
     {
         private string Name => Constants.Name;
         
