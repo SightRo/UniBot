@@ -6,7 +6,7 @@ namespace UniBot.Core.Helpers
 {
     public static class AttachmentFactory
     {
-        public static async Task<FileAttachment> CreateFileAttachmentAsync(string filePath, AttachmentType type = AttachmentType.Unknown)
+        public static FileAttachment CreateFileAttachmentAsync(string filePath, AttachmentType type = AttachmentType.Unknown)
         {
             var file = new FileInfo(filePath);
             if(!file.Exists)
@@ -14,25 +14,23 @@ namespace UniBot.Core.Helpers
 
             return new FileAttachment
             {
-                Name = GetName(file.Name),
-                Extension = file.Extension,
                 AttachmentType = type == AttachmentType.Unknown ? DetectType(file.Extension) : type,
-                Data = await File.ReadAllBytesAsync(filePath)
+                File = file
             };
         }
         
-        public static FileAttachment CreateFileAttachment(string fullName, byte[] data, AttachmentType type = AttachmentType.Unknown)
-        {
-            var extension = GetExtension(fullName);
-            
-            return new FileAttachment
-            {
-                Name = GetName(fullName),
-                Extension = extension,
-                AttachmentType = type == AttachmentType.Unknown ? DetectType(extension) : type,
-                Data = data
-            };
-        }
+        // public static FileAttachment CreateFileAttachment(string fullName, byte[] data, AttachmentType type = AttachmentType.Unknown)
+        // {
+        //     var extension = GetExtension(fullName);
+        //     
+        //     return new FileAttachment
+        //     {
+        //         Name = GetName(fullName),
+        //         Extension = extension,
+        //         AttachmentType = type == AttachmentType.Unknown ? DetectType(extension) : type,
+        //         Data = data
+        //     };
+        // }
 
         // TODO WTF. Find an elegant solution.
         private static AttachmentType DetectType(string extension)

@@ -4,7 +4,7 @@ namespace UniBot.Core.Models.Attachments
 {
     public class InAttachment : InModelBase<string>
     {
-        public InAttachment(string id, AttachmentType type, Object attachment, string messenger, string? urlSource)
+        public InAttachment(string id, string messenger,  AttachmentType type, Object attachment, string? urlSource)
             : base(id, messenger)
         {
             Type = type;

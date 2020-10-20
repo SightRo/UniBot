@@ -1,11 +1,13 @@
-﻿namespace UniBot.Core.Models.Attachments
+﻿using System.IO;
+
+namespace UniBot.Core.Models.Attachments
 {
     public class FileAttachment
     {
-        public string Name { get; set; }
-        public string Extension { get; set; }
+        public string Name => File.Name;
+        public string Extension => File.Extension;
         public AttachmentType AttachmentType { get; set; }
-        public byte[] Data { get; set; }
-        public string FullName => Name + Extension;
+        public string FullName => File.FullName;
+        public FileInfo File { get; set; } = null!;
     }
 }
