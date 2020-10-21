@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -137,17 +139,22 @@ namespace UniBot.Telegram
 
         //public static InAttachment ToAttachment()
 
-        public static InputMedia ToTgMedia(FileAttachment attachment)
+        public static InputMedia ToTgMedia(IOutAttachment attachment)
         {
-            var data = attachment.File.OpenRead();
+            Stream data = attachment switch
+            {
+                FileAttachment fileAttachment => fileAttachment.File.OpenRead(),
+                MemoryAttachment memoryAttachment => new MemoryStream(memoryAttachment.Data),
+                _ => throw new Exception("Unknown attachment type")
+            };
             return new InputMedia(data, attachment.FullName);
         }
 
-        public static InputMediaPhoto ToTgPhoto(FileAttachment attachment)
+        public static InputMediaPhoto ToTgPhoto(IOutAttachment attachment)
             => new InputMediaPhoto(ToTgMedia(attachment));
 
 
-        public static InputMediaVideo ToTgVideo(FileAttachment attachment)
+        public static InputMediaVideo ToTgVideo(IOutAttachment attachment)
             => new InputMediaVideo(ToTgMedia(attachment));
 
         private static ImmutableList<InAttachment> ExtractAttachments(TgMessage message)

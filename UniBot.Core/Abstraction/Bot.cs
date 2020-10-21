@@ -88,7 +88,7 @@ namespace UniBot.Core.Abstraction
 
             if (implementations.Count == 0)
                 throw new Exception("Not found necessary interface");
-            else if (implementations.Count > 1)
+            if (implementations.Count > 1)
                 throw new Exception("Found more than one interface implementation");
 
             instance = Activator.CreateInstance(implementations[0]) as TInterface;
@@ -101,7 +101,7 @@ namespace UniBot.Core.Abstraction
 
             if (usages.Count == 0)
                 throw new Exception("Not found necessary type with attribute");
-            else if (usages.Count > 1)
+            if (usages.Count > 1)
                 throw new Exception("Found more than one type with attribute");
         }
     }

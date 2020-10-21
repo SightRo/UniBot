@@ -13,14 +13,10 @@ namespace UniBot.Telegram
     public class TgReceiver : ControllerBase
     {
         private readonly Bot _bot;
-        private readonly TgMessenger _tgMessenger;
-        private readonly TgSettings _settings;
 
-        public TgReceiver(Bot bot, TgMessenger tgMessenger, TgSettings settings)
+        public TgReceiver(Bot bot)
         {
             _bot = bot;
-            _tgMessenger = tgMessenger;
-            _settings = settings;
         }
 
         [HttpPost]
@@ -46,7 +42,7 @@ namespace UniBot.Telegram
                     // The only way to create chat with ownerId.
                     // GetChat can pass ownerId to Converter.ToChat().
                     var messenger = _bot.ResolveMessenger(message.MessengerSource);
-                    var chat = await _tgMessenger.GetChat(update.Message.Chat.Id);
+                    var chat = await messenger.GetChat(update.Message.Chat.Id);
 
                     return new UpdateContext(messenger, chat, user, message);
                 }

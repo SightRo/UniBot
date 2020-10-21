@@ -19,11 +19,13 @@ namespace UniBot.Example
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddControllers()
+                .AddNewtonsoftJson();
             
             services.AddBot(Configuration)
                     .DetectMessengerImplementations()
-                    .DetectCommands();
+                    .DetectCommands()
+                    .Build();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

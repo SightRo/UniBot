@@ -5,7 +5,7 @@ namespace UniBot.Core.Helpers
 {
     public static class AttachmentFactory
     {
-        public static FileAttachment CreateFileAttachmentAsync(string filePath, AttachmentType type = AttachmentType.Unknown)
+        public static FileAttachment CreateFileAttachment(string filePath, AttachmentType type = AttachmentType.Unknown)
         {
             var file = new FileInfo(filePath);
             if(!file.Exists)

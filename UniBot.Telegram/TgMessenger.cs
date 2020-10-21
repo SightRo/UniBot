@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using UniBot.Core.Abstraction;
@@ -38,12 +37,16 @@ namespace UniBot.Telegram
         {
             var result = new List<long>(message.Attachments.Count + 1);
 
-            ConvertAttachments(message.Attachments, out var photos, out var videos, out var others);
+            GroupAttachments(message.Attachments, out var photos, out var videos, out var others);
+            var photoMediaGroup = photos.Select(TgConverter.ToTgPhoto);
+            var videoMediaGroup = videos.Select(TgConverter.ToTgVideo);
 
             if (photos.Count > 0)
-                result.AddRange((await _api.SendMediaGroupAsync(photos, chatId)).Select(a => (long) a.MessageId));
+                result.AddRange((await _api.SendMediaGroupAsync(photoMediaGroup, chatId))
+                    .Select(a => (long) a.MessageId));
             if (videos.Count > 0)
-                result.AddRange((await _api.SendMediaGroupAsync(videos, chatId)).Select(a => (long) a.MessageId));
+                result.AddRange((await _api.SendMediaGroupAsync(videoMediaGroup, chatId))
+                    .Select(a => (long) a.MessageId));
 
             foreach (var attachment in others)
             {
@@ -135,21 +138,21 @@ namespace UniBot.Telegram
         public object GetNativeObject()
             => _api;
 
-        private void ConvertAttachments(ICollection<FileAttachment> attachments, out List<IAlbumInputMedia> photos, out List<IAlbumInputMedia> videos, out List<FileAttachment> others)
+        private void GroupAttachments(ICollection<IOutAttachment> attachments, out List<IOutAttachment> photos, out List<IOutAttachment> videos, out List<IOutAttachment> others)
         {
-            photos = new List<IAlbumInputMedia>();
-            videos = new List<IAlbumInputMedia>();
-            others = new List<FileAttachment>();
+            photos = new List<IOutAttachment>();
+            videos = new List<IOutAttachment>();
+            others = new List<IOutAttachment>();
 
             foreach (var attachment in attachments)
             {
                 switch (attachment.AttachmentType)
                 {
                     case AttachmentType.Photo:
-                        photos.Add(TgConverter.ToTgPhoto(attachment));
+                        photos.Add(attachment);
                         break;
                     case AttachmentType.Video:
-                        videos.Add(TgConverter.ToTgVideo(attachment));
+                        videos.Add(attachment);
                         break;
                     default:
                         others.Add(attachment);

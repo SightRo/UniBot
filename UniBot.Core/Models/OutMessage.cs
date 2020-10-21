@@ -11,12 +11,12 @@ namespace UniBot.Core.Models
         }
 
         public OutMessage(string text, IKeyboard? keyboard = null, bool removeReplyKeyboard = false,
-            ICollection<FileAttachment>? attachments = null)
+            ICollection<IOutAttachment>? attachments = null)
         {
             Text = text;
             Keyboard = keyboard;
             RemoveReplyKeyboard = removeReplyKeyboard;
-            Attachments = attachments ?? new List<FileAttachment>();
+            Attachments = attachments ?? new List<IOutAttachment>();
         }
 
         public OutMessage(IKeyboard keyboard) :
@@ -32,6 +32,6 @@ namespace UniBot.Core.Models
         public string Text { get; set; }
         public bool RemoveReplyKeyboard { get; set; }
         public IKeyboard? Keyboard { get; set; }
-        public ICollection<FileAttachment> Attachments { get; set; }
+        public ICollection<IOutAttachment> Attachments { get; set; }
     }
 }
