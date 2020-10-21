@@ -12,11 +12,11 @@ namespace UniBot.Core.Abstraction
         Task<IEnumerable<long>> SendMessage(long chatId, OutMessage message);
         Task<bool> DeleteMessage(long chatId, long messageId);
         Task<bool> EditMessage(long chatId, long messageId, OutMessage message);
-        Task<FileAttachment?> DownloadAttachment(InAttachment attachment);
+        Task<MemoryAttachment?> DownloadAttachment(InAttachment attachment);
         
         Task<User?> GetUser(long userId);
         Task<Chat?> GetChat(long chatId);
 
-        TNative GetNativeObject<TNative>();
+        object GetNativeObject();
     }
 }

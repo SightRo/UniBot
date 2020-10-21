@@ -35,6 +35,15 @@ namespace UniBot.Core.AspNetCore
             return this;
         }
 
+        public BotBuilder AddCommand(CommandBase command)
+        {
+            _bot.AddCommand(command);
+            return this;
+        }
+
+        public void Build()
+            => _bot.InitializeMessengers(_services);
+
         public BotBuilder AddCommand<TCommand>()
             where TCommand : CommandBase
         {
@@ -72,5 +81,7 @@ namespace UniBot.Core.AspNetCore
             
             _bot.AddCommand(instance);
         }
+        
+        
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -16,6 +16,7 @@ using User = UniBot.Core.Models.User;
 using TgMessage = Telegram.Bot.Types.Message;
 using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
+using TgChatType = Telegram.Bot.Types.Enums.ChatType;
 
 namespace UniBot.Telegram
 {
@@ -30,14 +31,14 @@ namespace UniBot.Telegram
             _settings = settings;
         }
 
-        public string Name => Constants.Name;
+        public string Name => TgConstants.Name;
 
-        
+
         public async Task<IEnumerable<long>> SendMessage(long chatId, OutMessage message)
         {
-            var result = new List<long>(message.Attachments.Length + 1);
+            var result = new List<long>(message.Attachments.Count + 1);
 
-            var (photos, videos, others) = ConvertAttachments(message.Attachments);
+            ConvertAttachments(message.Attachments, out var photos, out var videos, out var others);
 
             if (photos.Count > 0)
                 result.AddRange((await _api.SendMediaGroupAsync(photos, chatId)).Select(a => (long) a.MessageId));
@@ -49,21 +50,21 @@ namespace UniBot.Telegram
                 switch (attachment.AttachmentType)
                 {
                     case AttachmentType.Audio:
-                        result.Add((await _api.SendAudioAsync(chatId, attachment.ToTgMedia())).MessageId);
+                        result.Add((await _api.SendAudioAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
                         break;
                     case AttachmentType.Voice:
-                        result.Add((await _api.SendVoiceAsync(chatId, attachment.ToTgMedia())).MessageId);
+                        result.Add((await _api.SendVoiceAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
                         break;
                     default:
-                        result.Add((await _api.SendDocumentAsync(chatId, attachment.ToTgMedia())).MessageId);
+                        result.Add((await _api.SendDocumentAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
                         break;
                 }
             }
 
             var keyboard = message.Keyboard switch
             {
-                InlineKeyboard inlineKeyboard => ConvertInlineKeyboard(inlineKeyboard),
-                ReplyKeyboard replyKeyboard => ConvertReplyKeyboard(replyKeyboard),
+                InlineKeyboard inlineKeyboard => TgConverter.ToTgKeyboard(inlineKeyboard),
+                ReplyKeyboard replyKeyboard => TgConverter.ToTgKeyboard(replyKeyboard),
                 _ => message.RemoveReplyKeyboard ? new ReplyKeyboardRemove() : null
             };
 
@@ -85,6 +86,8 @@ namespace UniBot.Telegram
             }
         }
 
+        // Todo Make it work as expected
+        // Need to identify type of message and then call method with specified message
         public async Task<bool> EditMessage(long chatId, long messageId, OutMessage message)
         {
             try
@@ -98,33 +101,25 @@ namespace UniBot.Telegram
             }
         }
 
-        public async Task<FileAttachment?> DownloadAttachment(InAttachment inAttachment)
+        public async Task<MemoryAttachment?> DownloadAttachment(InAttachment inAttachment)
         {
             var file = await _api.GetFileAsync(inAttachment.Id);
             var url = $"https://api.telegram.org/file/bot{_settings.Token}/{file.FilePath}";
-            using var client = new WebClient();
+            // Todo Change Attachment system.
+            using var client = new HttpClient();
+            var response = await client.GetByteArrayAsync(url);
 
-            var data = await client.DownloadDataTaskAsync(url);
-
-            // TODO Refactor this.
+            // Todo Refactor this.
             int index = file.FilePath.LastIndexOf('/');
             var fullName = file.FilePath.Substring(index + 1);
-            
-            return AttachmentFactory.CreateFileAttachment(fullName, data, inAttachment.Type);
+
+            return AttachmentFactory.CreateMemoryAttachment(fullName, response, inAttachment.Type);
         }
 
         public async Task<User?> GetUser(long userId)
         {
             var user = await _api.GetChatAsync(userId);
-            return new User
-            {
-                Id = userId,
-                Username = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsHuman = true,
-                MessengerSource = Name
-            };
+            return TgConverter.ToUser(user);
         }
 
         public async Task<Chat?> GetChat(long chatId)
@@ -134,89 +129,33 @@ namespace UniBot.Telegram
             var admins = await _api.GetChatAdministratorsAsync(chatId);
             var ownerId = admins.First(u => u.Status == ChatMemberStatus.Creator).User.Id;
 
-            return new Chat
-            {
-                Id = chatId,
-                Name = chat.Title ?? chat.Username,
-                Owner = ownerId,
-                IsUserConversation = chat.Type == ChatType.Private,
-                MessengerSource = Name
-            };
+            return TgConverter.ToChat(chat, ownerId);
         }
 
-        private (List<IAlbumInputMedia> photos, List<IAlbumInputMedia> videos, List<FileAttachment> others) 
-        ConvertAttachments(FileAttachment[] attachments)
+        public object GetNativeObject()
+            => _api;
+
+        private void ConvertAttachments(ICollection<FileAttachment> attachments, out List<IAlbumInputMedia> photos, out List<IAlbumInputMedia> videos, out List<FileAttachment> others)
         {
-            List<IAlbumInputMedia> photos = new List<IAlbumInputMedia>();
-            List<IAlbumInputMedia> videos = new List<IAlbumInputMedia>();
-            List<FileAttachment> others = new List<FileAttachment>();
+            photos = new List<IAlbumInputMedia>();
+            videos = new List<IAlbumInputMedia>();
+            others = new List<FileAttachment>();
 
             foreach (var attachment in attachments)
             {
                 switch (attachment.AttachmentType)
                 {
                     case AttachmentType.Photo:
-                        photos.Add(attachment.ToTgPhoto());
+                        photos.Add(TgConverter.ToTgPhoto(attachment));
                         break;
                     case AttachmentType.Video:
-                        videos.Add(attachment.ToTgVideo());
+                        videos.Add(TgConverter.ToTgVideo(attachment));
                         break;
                     default:
                         others.Add(attachment);
                         break;
                 }
             }
-
-            return (photos, videos, others);
-        }
-
-        private IReplyMarkup? ConvertInlineKeyboard(InlineKeyboard keyboard)
-        {
-            if (keyboard == null) 
-                return null;
-
-            var buttons = new List<List<InlineKeyboardButton>>(keyboard.Buttons.Count);
-            for (var i = 0; i < keyboard.Buttons.Count; i++)
-            {
-                var line = keyboard.Buttons[i];
-                buttons.Add(new List<InlineKeyboardButton>(line.Count));
-
-                foreach (var button in line) 
-                    buttons[i].Add(ConvertInlineButton(button));
-            }
-
-            var result = new InlineKeyboardMarkup(buttons);
-            return result;
-            
-            InlineKeyboardButton ConvertInlineButton(InlineButton button)
-            {
-                return new InlineKeyboardButton
-                {
-                    Text = button.Text, Url = button.Link, CallbackData = button.CallbackData
-                };
-            }
-        }
-
-        private ReplyKeyboardMarkup? ConvertReplyKeyboard(ReplyKeyboard keyboard)
-        {
-            if (keyboard == null) 
-                return null;
-
-            var buttons = new List<List<KeyboardButton>>(keyboard.Buttons.Count);
-            for (var i = 0; i < keyboard.Buttons.Count; i++)
-            {
-                var line = keyboard.Buttons[i];
-                buttons.Add(new List<KeyboardButton>(line.Count));
-
-                foreach (var button in line) 
-                    buttons[i].Add(ConvertReplyButton(button));
-            }
-
-            var result = new ReplyKeyboardMarkup(buttons, true, keyboard.OneTime);
-            return result;
-
-            KeyboardButton ConvertReplyButton(ReplyButton button)
-                => new KeyboardButton(button.Text);
         }
     }
 }

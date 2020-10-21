@@ -1,44 +1,38 @@
 ﻿using System.Net;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MihaZupan;
 using Telegram.Bot;
 using UniBot.Core.Abstraction;
-using UniBot.Core.Settings;
 
 namespace UniBot.Telegram
 {
     public class TgStartup : IMessengerStartup
     {
-        public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out MessengerOptions settings)
+        public void Init(Bot bot, IServiceCollection services, out IMessenger messenger)
         {
-            var tgSettings = new TgSettings();
-            // TODO Error handling.
-            bot.Settings.MessengerSettings[Constants.Name].Bind(tgSettings);
+            var tgSettings = bot.BotOptions.MessengerOptions[TgConstants.Name].Get<TgSettings>();
+            services.Configure<TgSettings>(bot.BotOptions.MessengerOptions[TgConstants.Name]);
 
             var proxy = GetProxy(tgSettings);
             var api = proxy != null
                 ? new TelegramBotClient(tgSettings.Token, proxy)
                 : new TelegramBotClient(tgSettings.Token);
 
-            services.AddSingleton<ITelegramBotClient>(api);
-            services.AddSingleton(tgSettings);
-
-            api.SetWebhookAsync(bot.Settings.Endpoint + Constants.Endpoint).GetAwaiter().GetResult();
+            api.SetWebhookAsync(bot.BotOptions.Endpoint + TgConstants.Endpoint).GetAwaiter().GetResult();
             
             messenger = new TgMessenger(api, tgSettings);
-            settings = tgSettings;
+            services.AddSingleton(messenger);
         }
 
         private IWebProxy? GetProxy(TgSettings settings)
         {
-            if (settings.Socks5 == null)
+            if (settings.Socks5 is null)
                 return null;
 
             var socks5 = settings.Socks5;
             
-            return socks5.Username == null || socks5.Password == null
+            return socks5.Username is null || socks5.Password is null
                 ? new HttpToSocks5Proxy(socks5.Hostname, socks5.Port) 
                 : new HttpToSocks5Proxy(socks5.Hostname, socks5.Port, socks5.Username, socks5.Password);
         }

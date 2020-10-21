@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
 using UniBot.Core.Settings;
 using UniBot.Core.Utils;
@@ -43,11 +44,11 @@ namespace UniBot.Core.Abstraction
                 throw new Exception($"IMessenger {name} is missed.");
         }
 
-        public void Run()
+        public void InitializeMessengers(IServiceCollection services)
         {
             foreach (var startup in _messengerStartups)
             {
-                startup.Init(this, out var messenger);
+                startup.Init(this, services, out var messenger);
                 AddToCollection(_messengers, new KeyValuePair<string, IMessenger>(messenger.Name, messenger));
             }
         }

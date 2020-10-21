@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Threading.Tasks;
 using UniBot.Core.Models.Attachments;
 
 namespace UniBot.Core.Helpers
@@ -14,23 +13,23 @@ namespace UniBot.Core.Helpers
 
             return new FileAttachment
             {
-                AttachmentType = type == AttachmentType.Unknown ? DetectType(file.Extension) : type,
-                File = file
+                File = file,
+                AttachmentType = type == AttachmentType.Unknown ? DetectType(file.Extension) : type
             };
         }
         
-        // public static FileAttachment CreateFileAttachment(string fullName, byte[] data, AttachmentType type = AttachmentType.Unknown)
-        // {
-        //     var extension = GetExtension(fullName);
-        //     
-        //     return new FileAttachment
-        //     {
-        //         Name = GetName(fullName),
-        //         Extension = extension,
-        //         AttachmentType = type == AttachmentType.Unknown ? DetectType(extension) : type,
-        //         Data = data
-        //     };
-        // }
+        public static MemoryAttachment CreateMemoryAttachment(string fullName, byte[] data, AttachmentType type = AttachmentType.Unknown)
+        {
+            var extension = GetExtension(fullName);
+            
+            return new MemoryAttachment
+            {
+                Name = GetName(fullName),
+                Extension = extension,
+                AttachmentType = type == AttachmentType.Unknown ? DetectType(extension) : type,
+                Data = data
+            };
+        }
 
         // TODO WTF. Find an elegant solution.
         private static AttachmentType DetectType(string extension)
