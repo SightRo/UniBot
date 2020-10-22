@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -129,8 +130,13 @@ namespace UniBot.Telegram
         {
             var chat = await _api.GetChatAsync(chatId);
 
-            var admins = await _api.GetChatAdministratorsAsync(chatId);
-            var ownerId = admins.First(u => u.Status == ChatMemberStatus.Creator).User.Id;
+            
+            var ownerId = chat.Type switch
+            {
+                TgChatType.Private => chat.Id,
+                _ => (await _api.GetChatAdministratorsAsync(chatId))
+                    .First(u => u.Status == ChatMemberStatus.Creator).User.Id
+            };
 
             return TgConverter.ToChat(chat, ownerId);
         }
