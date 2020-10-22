@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Settings;
 using VkNet;
-using VkNet.Abstractions;
-using VkNet.Infrastructure;
 using VkNet.Model;
 using VkNet.Model.RequestParams;
 
@@ -12,41 +11,52 @@ namespace UniBot.Vkontakte
 {
     public class VkStartup : IMessengerStartup
     {
-        public void Init(IBot bot, IServiceCollection services, out IMessenger messenger, out MessengerOptions settings)
+        private const string ServerName = "UniBot.Vk";
+
+        public void Init(Bot bot, IServiceCollection services, out IMessenger messenger)
         {
-            var vkSettings = new VkSettings();
-            bot.Settings.MessengerSettings[Constants.Name].Bind(vkSettings);
-            
+            var vkOptions = bot.BotOptions.MessengerOptions[VkConstants.Name].Get<VkOptions>();
+            services.Configure<VkOptions>(bot.BotOptions.MessengerOptions[VkConstants.Name]);
+
             var api = new VkApi();
             api.Authorize(new ApiAuthParams
             {
-                AccessToken = vkSettings.Token,
+                AccessToken = vkOptions.Token,
             });
             api.RequestsPerSecond = 20;
+            
+            DeleteCallbackServer(api, vkOptions);
+            AddCallbackServer(api, bot.BotOptions, vkOptions);
 
-            services.AddSingleton<IVkApi>(api);
-            services.AddSingleton<VkSettings>(vkSettings);
-            
-            // TODO Need to figure out how to delete webhook server after shutdown.
-            // Probably IApplicationLifetime is the answer.
-            
-            // var serverId = api.Groups.AddCallbackServer(vkSettings.GroupId, 
-            //     bot.Settings.Endpoint + Constants.Endpoint, 
-            //     "UniBot.Vk", 
-            //     vkSettings.Token);
-            //
-            // api.Groups.SetCallbackSettings(new CallbackServerParams
-            // {
-            //     GroupId = vkSettings.GroupId,
-            //     ServerId = serverId,
-            //     CallbackSettings = new CallbackSettings()
-            //     {
-            //         MessageNew = true
-            //     },
-            // });
-            
             messenger = new VkMessenger(api);
-            settings = vkSettings;
+            services.AddSingleton(messenger);
         }
+
+        private void DeleteCallbackServer(VkApi api, VkOptions options)
+        {
+            var server = api.Groups.GetCallbackServers(options.GroupId)
+                .FirstOrDefault(s => string.CompareOrdinal(s.Title, ServerName) == 0);
+
+            if (server != null)
+                api.Groups.DeleteCallbackServer(options.GroupId, (ulong)server.Id);
+        }
+
+        private void AddCallbackServer(VkApi api, BotOptions botOptions, VkOptions options)
+        {
+            var serverId = api.Groups.AddCallbackServer(options.GroupId, 
+                botOptions.Endpoint + VkConstants.Endpoint, 
+                "UniBot.Vk", 
+                options.Token);
+            
+            api.Groups.SetCallbackSettings(new CallbackServerParams
+            {
+                GroupId = options.GroupId,
+                ServerId = serverId,
+                CallbackSettings = new CallbackSettings()
+                {
+                    MessageNew = true
+                },
+            });
+        } 
     }
 }

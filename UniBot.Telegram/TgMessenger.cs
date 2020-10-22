@@ -22,12 +22,12 @@ namespace UniBot.Telegram
     public class TgMessenger : IMessenger
     {
         private readonly ITelegramBotClient _api;
-        private readonly TgSettings _settings;
+        private readonly TgOptions _options;
 
-        public TgMessenger(ITelegramBotClient api, TgSettings settings)
+        public TgMessenger(ITelegramBotClient api, TgOptions options)
         {
             _api = api;
-            _settings = settings;
+            _options = options;
         }
 
         public string Name => TgConstants.Name;
@@ -107,7 +107,7 @@ namespace UniBot.Telegram
         public async Task<MemoryAttachment?> DownloadAttachment(InAttachment inAttachment)
         {
             var file = await _api.GetFileAsync(inAttachment.Id);
-            var url = $"https://api.telegram.org/file/bot{_settings.Token}/{file.FilePath}";
+            var url = $"https://api.telegram.org/file/bot{_options.Token}/{file.FilePath}";
             // Todo Change Attachment system.
             using var client = new HttpClient();
             var response = await client.GetByteArrayAsync(url);

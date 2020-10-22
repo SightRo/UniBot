@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MihaZupan;
@@ -11,29 +12,36 @@ namespace UniBot.Telegram
     {
         public void Init(Bot bot, IServiceCollection services, out IMessenger messenger)
         {
-            var tgSettings = bot.BotOptions.MessengerOptions[TgConstants.Name].Get<TgSettings>();
-            services.Configure<TgSettings>(bot.BotOptions.MessengerOptions[TgConstants.Name]);
+            var tgOptions = bot.BotOptions.MessengerOptions[TgConstants.Name].Get<TgOptions>();
+            services.Configure<TgOptions>(bot.BotOptions.MessengerOptions[TgConstants.Name]);
 
-            var proxy = GetProxy(tgSettings);
+            var proxy = GetProxy(tgOptions);
             var api = proxy != null
-                ? new TelegramBotClient(tgSettings.Token, proxy)
-                : new TelegramBotClient(tgSettings.Token);
+                ? new TelegramBotClient(tgOptions.Token, proxy)
+                : new TelegramBotClient(tgOptions.Token);
 
-            api.SetWebhookAsync(bot.BotOptions.Endpoint + TgConstants.Endpoint).GetAwaiter().GetResult();
-            
-            messenger = new TgMessenger(api, tgSettings);
+            try
+            {
+                api.SetWebhookAsync(bot.BotOptions.Endpoint + TgConstants.Endpoint).GetAwaiter().GetResult();
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Couldn't set telegram webhook", e);
+            }
+
+            messenger = new TgMessenger(api, tgOptions);
             services.AddSingleton(messenger);
         }
 
-        private IWebProxy? GetProxy(TgSettings settings)
+        private IWebProxy? GetProxy(TgOptions options)
         {
-            if (settings.Socks5 is null)
+            if (options.Socks5 is null)
                 return null;
 
-            var socks5 = settings.Socks5;
-            
+            var socks5 = options.Socks5;
+
             return socks5.Username is null || socks5.Password is null
-                ? new HttpToSocks5Proxy(socks5.Hostname, socks5.Port) 
+                ? new HttpToSocks5Proxy(socks5.Hostname, socks5.Port)
                 : new HttpToSocks5Proxy(socks5.Hostname, socks5.Port, socks5.Username, socks5.Password);
         }
     }

@@ -1,34 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using UniBot.Core.Abstraction;
-using UniBot.Core.Models;
-using UniBot.Core.Models.Attachments;
-using VkNet.Abstractions;
-using VkNet.Model.Attachments;
-using VkNet.Model.GroupUpdate;
 using VkNet.Utils;
 using VkMessage = VkNet.Model.Message;
 
 namespace UniBot.Vkontakte
 {
-    [Route(Constants.Endpoint)]
+    [Route(VkConstants.Endpoint)]
     public class VkReceiver : ControllerBase
     {
-        private string Name => Constants.Name;
+        private string Name => VkConstants.Name;
 
-        private IBot _bot;
-        private VkMessenger _messenger;
-        private VkSettings _settings;
+        private readonly Bot _bot;
+        private readonly VkMessenger _messenger;
+        private readonly VkOptions _options;
 
-        public VkReceiver(IBot bot, VkSettings settings)
+        public VkReceiver(Bot bot, VkOptions options)
         {
             _bot = bot;
-            _settings = settings;
+            _options = options;
             _messenger = bot.ResolveMessenger(Name) as VkMessenger;
 
         }
@@ -37,64 +27,37 @@ namespace UniBot.Vkontakte
         [HttpPost]
         public async Task<IActionResult> UpdateReceiver([FromBody] Update update)
         { 
-                //await _messenger.SendMessage(393592868, new OutMessage("Brah"));
             switch (update.Type)
             {
                 case "confirmation":
-                    return Ok(_settings.Confirmation);
-                case "message_new":
-                    var context = await ConvertFromMessage(VkMessage.FromJson(new VkResponse(update.Object)));
-                    _bot.ProcessUpdate(context);
+                    return Ok(_options.Confirmation);
+                default:
+                    var context = await CreateUpdateContext(update);
+                    // Dangerous thing
+                    // Can skip message if context couldn't be created
+                    if (context != null)
+                        _bot.ProcessUpdate(context);
                     break;
             }
             
             return Ok();
         }
 
-        private async Task<UpdateContext> ConvertFromMessage(VkMessage message)
+        private async Task<UpdateContext?> CreateUpdateContext(Update update)
         {
-            var temp = await ConvertMessage(message);
-            return new UpdateContext(_messenger, temp.Chat, temp.Sender, temp);
+            switch (update.Type)
+            {
+                case "message_new":
+                    var originalMessage = VkMessage.FromJson(new VkResponse(update.Object));
+                    var message = VkConverter.ToInMessage(originalMessage);
+                    var chat = await _messenger.GetChat(originalMessage.PeerId!.Value);
+                    var sender = await _messenger.GetUser(originalMessage.FromId!.Value);
+                    return new UpdateContext(_messenger, chat, sender, message);
+                default:
+                    return null;
+            }
+            
         }
 
-        // TODO Forward messages are missing now.
-        // New to process with foreach.
-        private async Task<InMessage?> ConvertMessage(VkMessage message)
-        {
-            if (message == null)
-                return null;
-            
-            var forwardedMessages = new List<InMessage>();
-            foreach (var forwarded in message.ForwardedMessages)
-                forwardedMessages.Add(await ConvertMessage(message));
-            
-            return new InMessage
-            {
-                Id = (long) message.Id!,
-                Date = (DateTime) message.Date!,
-                Sender = await _messenger.GetUser(message!.FromId!.Value),
-                Chat = await _messenger.GetChat(message.ChatId ?? message!.PeerId!.Value),
-                Text = message.Text,
-                Reply = await ConvertMessage(message.ReplyMessage),
-                Forwarded = forwardedMessages.ToArray(),
-                Attachments = message.Attachments.Select(ConvertAttachment).ToArray(),
-                MessengerSource = Name
-            };
-        }
-
-        private InAttachment? ConvertAttachment(Attachment attachment)
-        {
-            (AttachmentType, string) res = attachment.Instance switch
-            {
-                Audio audio => (AttachmentType.Audio, audio.Url.ToString()),
-                AudioMessage voice => (AttachmentType.Audio, voice.LinkOgg.ToString()),
-                Document document => (AttachmentType.Document, document.Uri),
-                Photo photo => (AttachmentType.Photo, photo.Sizes.Last().Url.ToString()),
-                Sticker sticker => (AttachmentType.Sticker, sticker.ImagesWithBackground.Last().Url.ToString()),
-                Video _ => (AttachmentType.Video, null),
-                _ => (AttachmentType.Unknown, null)
-            };
-            return new InAttachment(attachment.ToString(), res.Item1, attachment.Instance, Name, res.Item2);
-        }
     }
 }

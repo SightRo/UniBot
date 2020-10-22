@@ -137,16 +137,9 @@ namespace UniBot.Telegram
                 => new KeyboardButton(button.Text);
         }
 
-        //public static InAttachment ToAttachment()
-
         public static InputMedia ToTgMedia(IOutAttachment attachment)
         {
-            Stream data = attachment switch
-            {
-                FileAttachment fileAttachment => fileAttachment.File.OpenRead(),
-                MemoryAttachment memoryAttachment => new MemoryStream(memoryAttachment.Data),
-                _ => throw new Exception("Unknown attachment type")
-            };
+            var data = new MemoryStream(attachment.GetData());
             return new InputMedia(data, attachment.FullName);
         }
 

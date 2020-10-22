@@ -34,11 +34,12 @@ namespace UniBot.Vkontakte
         {
             _api = api;
         }
-        public string Name => Constants.Name;
+
+        public string Name => VkConstants.Name;
 
         public async Task<IEnumerable<long>> SendMessage(long chatId, OutMessage message)
         {
-            var attachments = new List<MediaAttachment>(message.Attachments.Length);
+            var attachments = new List<MediaAttachment>(message.Attachments.Count);
 
             foreach (var attachment in message.Attachments)
             {
@@ -51,7 +52,7 @@ namespace UniBot.Vkontakte
                 };
                 attachments.Add(vkAttachment);
             }
-            
+
             var result = new List<long>
             {
                 await _api.Messages.SendAsync(new MessagesSendParams
@@ -61,10 +62,11 @@ namespace UniBot.Vkontakte
                     Message = message.Text,
                     Keyboard = message.Keyboard switch
                     {
-                        InlineKeyboard inlineKeyboard => ConvertInlineKeyboard(inlineKeyboard),
-                        ReplyKeyboard replyKeyboard => ConvertReplyKeyboard(replyKeyboard),
-                        _ => message.RemoveReplyKeyboard ? new MessageKeyboard() 
-                        { Buttons = new IEnumerable<MessageKeyboardButton>[0] }
+                        InlineKeyboard inlineKeyboard => VkConverter.ToVkKeyboard(inlineKeyboard),
+                        ReplyKeyboard replyKeyboard => VkConverter.ToVkKeyboard(replyKeyboard),
+                        _ => message.RemoveReplyKeyboard
+                            ? new MessageKeyboard
+                                {Buttons = new IEnumerable<MessageKeyboardButton>[0]}
                             : null
                     },
                     Attachments = attachments
@@ -82,7 +84,7 @@ namespace UniBot.Vkontakte
             => _api.Messages.EditAsync(new MessageEditParams {PeerId = messageId, Message = message.Text});
 
 
-        public async Task<FileAttachment?> DownloadAttachment(InAttachment attachment)
+        public async Task<MemoryAttachment?> DownloadAttachment(InAttachment attachment)
         {
             if (attachment.UrlSource == null)
                 return null;
@@ -93,13 +95,14 @@ namespace UniBot.Vkontakte
             {
                 AttachmentType.Audio => $"Audio{DateTime.Now.Ticks}.mp3",
                 AttachmentType.Voice => $"Voice{DateTime.Now.Ticks}.ogg",
-                AttachmentType.Document => $"Document{DateTime.Now.Ticks}.{((Document)attachment.OriginalAttachment).Ext}",
+                AttachmentType.Document =>
+                    $"Document{DateTime.Now.Ticks}.{((Document) attachment.OriginalAttachment).Ext}",
                 AttachmentType.Photo => $"Photo{DateTime.Now.Ticks}.jpg",
                 AttachmentType.Sticker => $"Sticker{DateTime.Now.Ticks}.jpg",
                 _ => $"UnknownFileType{DateTime.Now.Millisecond}"
             };
-            
-            return AttachmentFactory.CreateFileAttachment(name, data, attachment.Type);
+
+            return AttachmentFactory.CreateMemoryAttachment(name, data, attachment.Type);
         }
 
         public async Task<User?> GetUser(long userId)
@@ -122,6 +125,7 @@ namespace UniBot.Vkontakte
             {
                 if (!await IsBotAdmin(chatId))
                 {
+                    // Todo Make configurable behavior for those kind of cases
                     var message = new OutMessage {Text = "Бот не может работать корректно без прав администратора."};
                     await SendMessage(chatId, message);
                 }
@@ -134,175 +138,77 @@ namespace UniBot.Vkontakte
             if (chat.Peer.Type == ConversationPeerType.User)
             {
                 var user = await GetUser(chatId);
-                var name = user!.FirstName + " " + user!.LastName;
-                return new Chat
-                {
-                    Id = chatId,
-                    Name = name,
-                    Owner = chatId,
-                    IsUserConversation = true,
-                    MessengerSource = Name
-                };
+                return VkConverter.ToChat(chatId, user);
             }
+
             if (chat.Peer.Type == ConversationPeerType.Chat)
-            {
-                return new Chat
-                {
-                    Id = chatId,
-                    Name = chat.ChatSettings.Title,
-                    Owner = chat.ChatSettings.OwnerId,
-                    IsUserConversation = false,
-                    MessengerSource = Name
-                };
-            }
+                return VkConverter.ToChat(chatId, chat);
 
             return null;
         }
 
-        private async Task<Document> UploadDocument(long chatId, FileAttachment attachment)
+        public object GetNativeObject()
+        {
+            return _api;
+        }
+
+        private async Task<Document> UploadDocument(long chatId, IOutAttachment attachment)
         {
             var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.Doc);
-            var response = await UploadFile(server.UploadUrl, attachment.Data, attachment.FullName);
+            var response = await UploadFile(server.UploadUrl, attachment.GetData(), attachment.FullName);
             var documents = await _api.Docs.SaveAsync(response, attachment.FullName, null);
-            
+
             if (documents.Count != 1)
                 throw new Exception($"Error while loading document to {Name}");
 
-            return (Document)documents[0].Instance;
+            return (Document) documents[0].Instance;
         }
 
-        private async Task<Photo> UploadPhoto(long chatId, FileAttachment attachment)
+        private async Task<Photo> UploadPhoto(long chatId, IOutAttachment attachment)
         {
             var server = await _api.Photo.GetMessagesUploadServerAsync(chatId);
-            var response = await UploadFile(server.UploadUrl, attachment.Data, attachment.FullName);
+            var response = await UploadFile(server.UploadUrl, attachment.GetData(), attachment.FullName);
             var photos = await _api.Photo.SaveMessagesPhotoAsync(response);
-            
+
             if (photos.Count != 1)
                 throw new Exception($"Error while loading photo to {Name}");
 
             return photos[0];
         }
-        
-        private async Task<AudioMessage> UploadAudio(long chatId, FileAttachment attachment)
+
+        private async Task<AudioMessage> UploadAudio(long chatId, IOutAttachment attachment)
         {
             var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.AudioMessage);
-            var response = await UploadFile(server.UploadUrl, attachment.Data, attachment.Name);
+            var response = await UploadFile(server.UploadUrl, attachment.GetData(), attachment.Name);
             var documents = await _api.Docs.SaveAsync(response, attachment.Name, null);
-            
+
             if (documents.Count != 1)
                 throw new Exception($"Error while loading audio to {Name}");
 
-            return (AudioMessage)documents[0].Instance;
-        }
-
-        private MessageKeyboard? ConvertInlineKeyboard(InlineKeyboard keyboard)
-        {
-            if (keyboard == null)
-                return null;
-            
-            var buttons = new List<List<MessageKeyboardButton>>(keyboard.Buttons.Count);
-            for (int i = 0; i < keyboard.Buttons.Count; i++)
-            {
-                var line = keyboard.Buttons[i];
-                buttons.Add(new List<MessageKeyboardButton>(line.Count));
-
-                foreach (var button in line)
-                    buttons[i].Add(ConvertInlineButton(button));
-            }
-
-            var result = new MessageKeyboard
-            {
-                Buttons = buttons,
-                Inline = true
-            };
-            return result;
-            
-            MessageKeyboardButton ConvertInlineButton(InlineButton button)
-            {
-                return new MessageKeyboardButton
-                {
-                    Action = new MessageKeyboardButtonAction
-                    {
-                        Label = button.Text,
-                        Link = button.Link != null ? new Uri(button.Link) : null,
-                        Payload = JsonConvert.SerializeObject(button.CallbackData),
-                        Type = button.Link == null ? KeyboardButtonActionType.Text : KeyboardButtonActionType.OpenLink
-                    }
-                };
-            }
-        }
-
-        private MessageKeyboard? ConvertReplyKeyboard(ReplyKeyboard keyboard)
-        {
-            if (keyboard == null)
-                return null;
-            
-            var buttons = new List<List<MessageKeyboardButton>>(keyboard.Buttons.Count);
-            for (int i = 0; i < keyboard.Buttons.Count; i++)
-            {
-                var line = keyboard.Buttons[i];
-                buttons.Add(new List<MessageKeyboardButton>(line.Count));
-
-                foreach (var button in line)
-                    buttons[i].Add(ConvertReplyButton(button));
-            }
-            
-            var result = new MessageKeyboard
-            {
-                Buttons = buttons,
-                Inline = false,
-                OneTime = keyboard.OneTime
-            };
-            return result;
-
-            MessageKeyboardButton ConvertReplyButton(ReplyButton button)
-            {
-                return new MessageKeyboardButton
-                {
-                    Action = new MessageKeyboardButtonAction
-                    {
-                        Label = button.Text,
-                        Payload = JsonConvert.SerializeObject(button.CallbackData),
-                        Type = KeyboardButtonActionType.Text
-                    }
-                };
-            }
+            return (AudioMessage) documents[0].Instance;
         }
 
         private async Task<User?> GetUserFromVk(long id)
         {
             var users = await _api.Users.GetAsync(new[] {id}, ProfileFields.ScreenName);
-            if (users.Count != 1) return null;
+            if (users.Count != 1) 
+                return null;
 
             var user = users.First();
 
-            return new User
-            {
-                Id = user.Id,
-                Username = user.ScreenName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsHuman = true,
-                MessengerSource = Name
-            };
+            return VkConverter.ToUser(user);
         }
 
         private async Task<User?> GetGroupFromVk(long id)
         {
             var groups = await _api.Groups.GetByIdAsync(new string[0], id.ToString(), GroupsFields.Status);
 
-            if (groups.Count != 1) return null;
+            if (groups.Count != 1) 
+                return null;
 
             var group = groups.First();
 
-            return new User
-            {
-                Id = group.Id,
-                Username = group.ScreenName,
-                FirstName = group.Name,
-                IsHuman = false,
-                MessengerSource = Name
-            };
+            return VkConverter.ToUser(group);
         }
 
         private async Task<bool> IsBotAdmin(long chatId)
@@ -325,7 +231,7 @@ namespace UniBot.Vkontakte
             var dataContent = new ByteArrayContent(data);
             dataContent.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
             requestContent.Add(dataContent, "file", fileName);
-            
+
             var response = await client.PostAsync(url, requestContent);
             response.EnsureSuccessStatusCode();
 

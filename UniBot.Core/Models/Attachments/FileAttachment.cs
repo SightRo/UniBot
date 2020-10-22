@@ -9,5 +9,8 @@ namespace UniBot.Core.Models.Attachments
         public string FullName => File.FullName;
         public FileInfo File { get; set; } = null!;
         public AttachmentType AttachmentType { get; set; }
+
+        public byte[] GetData()
+            => System.IO.File.ReadAllBytes(File.FullName);
     }
 }

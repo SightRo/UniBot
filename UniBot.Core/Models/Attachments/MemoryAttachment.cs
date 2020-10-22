@@ -9,5 +9,9 @@ namespace UniBot.Core.Models.Attachments
         public string FullName => Name + Extension;
         public AttachmentType AttachmentType { get; set; }
         public byte[] Data { get; set; } = new byte[0];
+
+        public byte[] GetData()
+            => Data;
+
     }
 }
