@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using UniBot.Core.Abstraction;
 using VkNet.Utils;
 using VkMessage = VkNet.Model.Message;
@@ -16,10 +17,10 @@ namespace UniBot.Vkontakte
         private readonly VkMessenger _messenger;
         private readonly VkOptions _options;
 
-        public VkReceiver(Bot bot, VkOptions options)
+        public VkReceiver(Bot bot, IOptions<VkOptions> options)
         {
             _bot = bot;
-            _options = options;
+            _options = options.Value;
             _messenger = bot.ResolveMessenger(Name) as VkMessenger;
 
         }
