@@ -37,7 +37,8 @@ namespace UniBot.Telegram
                 Reply = ToMessage(message.ReplyToMessage),
                 //Todo Implement Forwarded messages. 
                 //Forwarded = ImmutableList.Create<InMessage>(ToMessage())
-                Attachments = ExtractAttachments(message)
+                Attachments = ExtractAttachments(message),
+                MessengerSource = TgConstants.Name
             };
         }
 
