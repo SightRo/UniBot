@@ -7,13 +7,11 @@ namespace UniBot.Core.Utils
 {
     public static class Reflector
     {
-        public static List<Type> FindInterfaceImplementations<TInterface>(Assembly assembly)
-            // No way to specify interface as type constraint.
-            where TInterface : class
+        public static List<Type> FindInterfaceImplementations(Assembly assembly, string interfaceName)
         {
             var interfaceImpls = assembly
                 .GetTypes()
-                .Where(x => x.GetInterface(nameof(TInterface)) != null && !x.IsAbstract && !x.IsInterface)
+                .Where(x => x.GetInterface(interfaceName) != null && !x.IsAbstract && !x.IsInterface)
                 .ToList();
 
             return interfaceImpls;
@@ -33,7 +31,18 @@ namespace UniBot.Core.Utils
         public static bool CheckAssemblyAttribute<TAttribute>(Assembly assembly)
             where TAttribute : Attribute
         {
-            return assembly.GetCustomAttribute<Attribute>() != null;
+            return assembly.GetCustomAttribute<TAttribute>() != null;
+        }
+
+        public static TType? GetInstance<TType>(Type type)
+            where TType : class
+        {
+            if (type.IsValueType)
+                return default!;
+            if (type.GetConstructor(Type.EmptyTypes) != null)
+                return Activator.CreateInstance(type) as TType;
+
+            throw new Exception("No available parameterless constructor");
         }
     }
 }

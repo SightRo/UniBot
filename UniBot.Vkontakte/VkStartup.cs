@@ -46,7 +46,7 @@ namespace UniBot.Vkontakte
             var serverId = api.Groups.AddCallbackServer(options.GroupId, 
                 botOptions.Endpoint + VkConstants.Endpoint, 
                 "UniBot.Vk", 
-                options.Token);
+                null);
             
             api.Groups.SetCallbackSettings(new CallbackServerParams
             {

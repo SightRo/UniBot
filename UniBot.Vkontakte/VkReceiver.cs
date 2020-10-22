@@ -6,6 +6,7 @@ using VkMessage = VkNet.Model.Message;
 
 namespace UniBot.Vkontakte
 {
+    [UpdateReceiver(VkConstants.Name)]
     [Route(VkConstants.Endpoint)]
     public class VkReceiver : ControllerBase
     {

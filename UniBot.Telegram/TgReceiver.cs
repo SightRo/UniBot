@@ -9,6 +9,7 @@ using TgChat = Telegram.Bot.Types.Chat;
 
 namespace UniBot.Telegram
 {
+    [UpdateReceiver(TgConstants.Name)]
     [Route(TgConstants.Endpoint)]
     public class TgReceiver : ControllerBase
     {

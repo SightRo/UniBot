@@ -58,14 +58,12 @@ namespace UniBot.Core.Abstraction
             if (!Reflector.CheckAssemblyAttribute<MessengerImplAttribute>(assembly))
                 throw new Exception("Assembly doesn't implement any messenger");
 
-            CheckInterfaceImplementation<IMessengerStartup>(assembly, out var startup);
-            CheckInterfaceImplementation<IMessenger>(assembly, out _);
-            CheckAttributeUsage<UpdateReceiverAttribute>(assembly);
+            var startupType = GetInterfaceImplementation(assembly, nameof(IMessengerStartup));
+            GetInterfaceImplementation(assembly, nameof(IMessenger));
+            GetAttributeUsage<UpdateReceiverAttribute>(assembly);
 
-            if (startup != null)
-                AddToCollection(_messengerStartups, startup);
-            else
-                throw new Exception("Couldn't create instance of IMessengerStartup");
+            var startup = Reflector.GetInstance<IMessengerStartup>(startupType);
+            AddToCollection(_messengerStartups, startup);
         }
 
         public void AddCommand<TCommand>(TCommand command)
@@ -81,20 +79,19 @@ namespace UniBot.Core.Abstraction
             collection.Add(value);
         }
 
-        private void CheckInterfaceImplementation<TInterface>(Assembly assembly, out TInterface? instance)
-            where TInterface : class
+        private Type GetInterfaceImplementation(Assembly assembly, string interfaceName)
         {
-            var implementations = Reflector.FindInterfaceImplementations<TInterface>(assembly);
+            var implementations = Reflector.FindInterfaceImplementations(assembly, interfaceName);
 
             if (implementations.Count == 0)
                 throw new Exception("Not found necessary interface");
             if (implementations.Count > 1)
                 throw new Exception("Found more than one interface implementation");
 
-            instance = Activator.CreateInstance(implementations[0]) as TInterface;
+            return implementations[0];
         }
 
-        private void CheckAttributeUsage<TAttribute>(Assembly assembly)
+        private Type GetAttributeUsage<TAttribute>(Assembly assembly)
             where TAttribute : Attribute
         {
             var usages = Reflector.FindAttributeUsage<TAttribute>(assembly);
@@ -103,6 +100,8 @@ namespace UniBot.Core.Abstraction
                 throw new Exception("Not found necessary type with attribute");
             if (usages.Count > 1)
                 throw new Exception("Found more than one type with attribute");
+
+            return usages[0];
         }
     }
 }
