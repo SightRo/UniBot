@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using UniBot.Core.Abstraction;
@@ -38,6 +40,7 @@ namespace UniBot.Telegram
             {
                 case UpdateType.Message:
                 {
+                    Console.WriteLine(JsonConvert.SerializeObject(update));
                     var message = TgConverter.ToMessage(update.Message);
                     var user = TgConverter.ToUser(update.Message.From);
                     // The only way to create chat with ownerId.
