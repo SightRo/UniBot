@@ -42,7 +42,7 @@ namespace UniBot.Vkontakte
                     break;
             }
             
-            return Ok();
+            return Ok("Ok");
         }
 
         private async Task<UpdateContext?> CreateUpdateContext(Update update)
