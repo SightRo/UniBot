@@ -40,7 +40,6 @@ namespace UniBot.Telegram
             {
                 case UpdateType.Message:
                 {
-                    Console.WriteLine(JsonConvert.SerializeObject(update));
                     var message = TgConverter.ToMessage(update.Message);
                     var user = TgConverter.ToUser(update.Message.From);
                     // The only way to create chat with ownerId.

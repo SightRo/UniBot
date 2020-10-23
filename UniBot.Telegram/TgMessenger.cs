@@ -130,7 +130,6 @@ namespace UniBot.Telegram
         {
             var chat = await _api.GetChatAsync(chatId);
 
-            
             var ownerId = chat.Type switch
             {
                 TgChatType.Private => chat.Id,

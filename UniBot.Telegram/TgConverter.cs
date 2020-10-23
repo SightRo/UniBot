@@ -44,6 +44,15 @@ namespace UniBot.Telegram
 
         public static Chat ToChat(TgChat chat, long ownerId)
         {
+            ImmutableList<InAttachment> photos = ImmutableList<InAttachment>.Empty;
+            if (chat.Photo != null)
+            {
+                photos = ImmutableList.Create(
+                    new InAttachment(chat.Photo.SmallFileId, TgConstants.Name, AttachmentType.Photo, null, null),
+                    new InAttachment(chat.Photo.BigFileId, TgConstants.Name, AttachmentType.Photo, null, null)
+                );
+            }
+
             return new Chat
             {
                 Id = chat.Id,
@@ -55,10 +64,7 @@ namespace UniBot.Telegram
                     TgChatType.Channel => ChatType.Community,
                     _ => ChatType.Group
                 },
-                Photos = ImmutableList.Create(
-                    new InAttachment(chat.Photo.SmallFileId, TgConstants.Name, AttachmentType.Photo, null, null),
-                    new InAttachment(chat.Photo.BigFileId, TgConstants.Name, AttachmentType.Photo, null, null)
-                ),
+                Photos = photos,
                 MessengerSource = TgConstants.Name
             };
         }
@@ -75,7 +81,7 @@ namespace UniBot.Telegram
                 MessengerSource = TgConstants.Name
             };
         }
-        
+
         public static User ToUser(TgUser user)
         {
             return new User
@@ -158,10 +164,10 @@ namespace UniBot.Telegram
                 case MessageType.Photo:
                     return message.Photo
                         .Select(p => new InAttachment(
-                            p.FileId, 
-                            TgConstants.Name, 
+                            p.FileId,
+                            TgConstants.Name,
                             AttachmentType.Photo,
-                            p, 
+                            p,
                             null))
                         .ToImmutableList();
 
@@ -174,7 +180,7 @@ namespace UniBot.Telegram
                             AttachmentType.Audio,
                             message.Audio,
                             null));
-                    
+
                 case MessageType.Video:
                     return ImmutableList.Create(
                         new InAttachment(
@@ -183,7 +189,7 @@ namespace UniBot.Telegram
                             AttachmentType.Video,
                             message.Video,
                             null));
-                
+
                 case MessageType.Voice:
                     return ImmutableList.Create(
                         new InAttachment(
@@ -192,7 +198,7 @@ namespace UniBot.Telegram
                             AttachmentType.Voice,
                             message.Voice,
                             null));
-                
+
                 case MessageType.Document:
                     return ImmutableList.Create(
                         new InAttachment(
@@ -201,7 +207,7 @@ namespace UniBot.Telegram
                             AttachmentType.Document,
                             message.Document,
                             null));
-                
+
                 case MessageType.Sticker:
                     return ImmutableList.Create(
                         new InAttachment(
@@ -210,7 +216,7 @@ namespace UniBot.Telegram
                             AttachmentType.Sticker,
                             message.Sticker,
                             null));
-                
+
                 case MessageType.VideoNote:
                     return ImmutableList.Create(
                         new InAttachment(
