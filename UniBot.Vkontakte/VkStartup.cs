@@ -21,12 +21,12 @@ namespace UniBot.Vkontakte
             var api = new VkApi();
             api.Authorize(new ApiAuthParams
             {
-                AccessToken = vkOptions.Token,
+                AccessToken = vkOptions.Token
             });
             api.RequestsPerSecond = 20;
             
-            DeleteCallbackServer(api, vkOptions);
-            AddCallbackServer(api, bot.BotOptions, vkOptions);
+            //DeleteCallbackServer(api, vkOptions);
+            //AddCallbackServer(api, bot.BotOptions, vkOptions);
 
             messenger = new VkMessenger(api);
             services.AddSingleton(messenger);
