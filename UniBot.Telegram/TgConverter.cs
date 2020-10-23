@@ -49,12 +49,7 @@ namespace UniBot.Telegram
                 Id = chat.Id,
                 Title = chat.Title ?? chat.Username,
                 OwnerId = ownerId,
-                Type = chat.Type switch
-                {
-                    TgChatType.Private => ChatType.Private,
-                    TgChatType.Channel => ChatType.Community,
-                    _ => ChatType.Group
-                },
+                
                 Photos = ImmutableList.Create(
                     new InAttachment(chat.Photo.SmallFileId, TgConstants.Name, AttachmentType.Photo, null, null),
                     new InAttachment(chat.Photo.BigFileId, TgConstants.Name, AttachmentType.Photo, null, null)

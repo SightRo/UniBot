@@ -52,10 +52,10 @@ namespace UniBot.Vkontakte
             {
                 GroupId = options.GroupId,
                 ServerId = serverId,
-                CallbackSettings = new CallbackSettings()
+                CallbackSettings = new CallbackSettings
                 {
-                    MessageNew = true
-                },
+                    MessageNew = true,
+                }
             });
         } 
     }
