@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
 using UniBot.Core.Settings;
@@ -23,10 +24,10 @@ namespace UniBot.Core.Abstraction
         public IReadOnlyDictionary<string, CommandBase> Commands => _commands;
         public IReadOnlyDictionary<string, IMessenger> Messengers => _messengers;
 
-        public void ProcessUpdate(UpdateContext context)
+        public async Task ProcessUpdate(UpdateContext context)
         {
             if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
-                GetCommand(commandName)?.Execute(context);
+                await GetCommand(commandName)?.Execute(context);
         }
 
         public CommandBase? GetCommand(string commandName)
