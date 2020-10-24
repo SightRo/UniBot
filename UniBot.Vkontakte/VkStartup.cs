@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Settings;
 using VkNet;
+using VkNet.Infrastructure;
 using VkNet.Model;
 using VkNet.Model.RequestParams;
 
@@ -25,10 +26,10 @@ namespace UniBot.Vkontakte
             });
             api.RequestsPerSecond = 20;
             
-            //DeleteCallbackServer(api, vkOptions);
-            //AddCallbackServer(api, bot.BotOptions, vkOptions);
+            DeleteCallbackServer(api, vkOptions);
+            var confirmationCode = AddCallbackServer(api, bot.BotOptions, vkOptions);
 
-            messenger = new VkMessenger(api);
+            messenger = new VkMessenger(api, confirmationCode);
             services.AddSingleton(messenger);
         }
 
@@ -41,7 +42,7 @@ namespace UniBot.Vkontakte
                 api.Groups.DeleteCallbackServer(options.GroupId, (ulong)server.Id);
         }
 
-        private void AddCallbackServer(VkApi api, BotOptions botOptions, VkOptions options)
+        private string AddCallbackServer(VkApi api, BotOptions botOptions, VkOptions options)
         {
             var serverId = api.Groups.AddCallbackServer(options.GroupId, 
                 botOptions.Endpoint + VkConstants.Endpoint, 
@@ -52,11 +53,14 @@ namespace UniBot.Vkontakte
             {
                 GroupId = options.GroupId,
                 ServerId = serverId,
+                ApiVersion = api.VkApiVersion as VkApiVersionManager,
                 CallbackSettings = new CallbackSettings
                 {
                     MessageNew = true,
                 }
             });
+
+            return api.Groups.GetCallbackConfirmationCode(options.GroupId);
         } 
     }
 }

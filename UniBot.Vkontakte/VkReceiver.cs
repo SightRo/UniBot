@@ -11,18 +11,13 @@ namespace UniBot.Vkontakte
     [Route(VkConstants.Endpoint)]
     public class VkReceiver : ControllerBase
     {
-        private string Name => VkConstants.Name;
-
         private readonly Bot _bot;
         private readonly VkMessenger _messenger;
-        private readonly VkOptions _options;
 
-        public VkReceiver(Bot bot, IOptions<VkOptions> options)
+        public VkReceiver(Bot bot)
         {
             _bot = bot;
-            _options = options.Value;
-            _messenger = bot.ResolveMessenger(Name) as VkMessenger;
-
+            _messenger = bot.ResolveMessenger(VkConstants.Name) as VkMessenger;
         }
 
         // TODO Check out GroupUpdate class.
@@ -32,7 +27,7 @@ namespace UniBot.Vkontakte
             switch (update.Type)
             {
                 case "confirmation":
-                    return Ok(_options.Confirmation);
+                    return Ok(_messenger.ConfirmationCode);
                 default:
                     var context = await CreateUpdateContext(update);
                     // Dangerous thing

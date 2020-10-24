@@ -30,10 +30,13 @@ namespace UniBot.Vkontakte
     {
         private readonly IVkApi _api;
 
-        public VkMessenger(IVkApi api)
+        public VkMessenger(IVkApi api, string confirmationCode)
         {
             _api = api;
+            ConfirmationCode = confirmationCode;
         }
+
+        public string ConfirmationCode { get;}
 
         public string Name => VkConstants.Name;
 
