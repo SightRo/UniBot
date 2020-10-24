@@ -18,7 +18,7 @@ namespace UniBot.Core.AspNetCore
                 SingleWriter = true,
                 SingleReader = false
             });
-            var bot = new Bot(botSettings, channel);
+            var bot = new Bot(botSettings);
 
             services.Configure<BotOptions>(config.GetSection("BotSettings"));
             services.AddSingleton(bot);

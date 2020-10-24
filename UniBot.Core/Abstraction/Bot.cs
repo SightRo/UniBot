@@ -31,11 +31,7 @@ namespace UniBot.Core.Abstraction
             if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
             {
                 var command = GetCommand(commandName);
-                _jobQueue.Enqueue(new JobItem
-                {
-                    Action = command,
-                    Context = context
-                });
+                _jobQueue.Enqueue(new JobItem(command, context));
             }
         }
 
