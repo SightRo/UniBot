@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
@@ -14,10 +15,12 @@ namespace UniBot.Core.Abstraction
         private readonly Dictionary<string, CommandBase> _commands = new Dictionary<string, CommandBase>();
         private readonly Dictionary<string, IMessenger> _messengers = new Dictionary<string, IMessenger>();
         private readonly List<IMessengerStartup> _messengerStartups = new List<IMessengerStartup>();
+        private readonly ChannelWriter<JobItem> _channelWriter;
 
-        public Bot(BotOptions botOptions)
+        public Bot(BotOptions botOptions, Channel<JobItem> channel)
         {
             BotOptions = botOptions;
+            _channelWriter = channel.Writer;
         }
 
         public BotOptions BotOptions { get; }
@@ -27,7 +30,13 @@ namespace UniBot.Core.Abstraction
         public async Task ProcessUpdate(UpdateContext context)
         {
             if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
-                await GetCommand(commandName)?.Execute(context);
+            {
+                var command = GetCommand(commandName);
+                if (command is null)
+                    return;
+
+                await _channelWriter.WriteAsync(new JobItem(command, context));
+            }
         }
 
         public CommandBase? GetCommand(string commandName)
