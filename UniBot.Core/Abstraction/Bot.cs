@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
+using UniBot.Core.Collections;
 using UniBot.Core.Settings;
 using UniBot.Core.Utils;
 
@@ -13,10 +14,12 @@ namespace UniBot.Core.Abstraction
         private readonly Dictionary<string, CommandBase> _commands = new Dictionary<string, CommandBase>();
         private readonly Dictionary<string, IMessenger> _messengers = new Dictionary<string, IMessenger>();
         private readonly List<IMessengerStartup> _messengerStartups = new List<IMessengerStartup>();
+        private readonly JobQueue _jobQueue;
 
         public Bot(BotOptions botOptions)
         {
             BotOptions = botOptions;
+            _jobQueue = new JobQueue(botOptions.ExecutingOptions);
         }
 
         public BotOptions BotOptions { get; }
@@ -26,7 +29,14 @@ namespace UniBot.Core.Abstraction
         public void ProcessUpdate(UpdateContext context)
         {
             if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
-                GetCommand(commandName)?.Execute(context);
+            {
+                var command = GetCommand(commandName);
+                _jobQueue.Enqueue(new JobItem
+                {
+                    Action = command,
+                    Context = context
+                });
+            }
         }
 
         public CommandBase? GetCommand(string commandName)
