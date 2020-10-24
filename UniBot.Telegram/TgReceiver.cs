@@ -29,7 +29,7 @@ namespace UniBot.Telegram
             // Dangerous thing
             // Can skip message if context couldn't be created
             if (context != null)
-                _bot.ProcessUpdate(context);
+                await _bot.ProcessUpdate(context);
             
             return Ok();
         }
