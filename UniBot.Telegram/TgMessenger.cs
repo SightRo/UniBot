@@ -51,7 +51,7 @@ namespace UniBot.Telegram
 
             foreach (var attachment in others)
             {
-                switch (attachment.AttachmentType)
+                switch (attachment.Type)
                 {
                     case AttachmentType.Audio:
                         result.Add((await _api.SendAudioAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
@@ -151,7 +151,7 @@ namespace UniBot.Telegram
 
             foreach (var attachment in attachments)
             {
-                switch (attachment.AttachmentType)
+                switch (attachment.Type)
                 {
                     case AttachmentType.Photo:
                         photos.Add(attachment);

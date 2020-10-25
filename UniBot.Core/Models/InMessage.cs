@@ -6,12 +6,33 @@ namespace UniBot.Core.Models
 {
     public class InMessage : InModelBase<long>
     {
-        public DateTime Date { get; set; }
-        public long SenderId { get; set; }
-        public long ChatId { get; set; }
-        public string? Text { get; set; }
-        public InMessage? Reply { get; set; }
-        public ImmutableList<InMessage> Forwarded { get; set; } = ImmutableList<InMessage>.Empty;
-        public ImmutableList<InAttachment> Attachments { get; set; } = ImmutableList<InAttachment>.Empty;
+        public InMessage(
+            long id,
+            string messengerSource,
+            DateTime date,
+            long senderId,
+            long chatId,
+            string? text,
+            InMessage? reply,
+            ImmutableList<InMessage>? forwarded,
+            ImmutableList<InAttachment>? attachments)
+            : base(id, messengerSource)
+        {
+            Date = date;
+            SenderId = senderId;
+            ChatId = chatId;
+            Text = text;
+            Reply = reply;
+            Forwarded = forwarded ?? ImmutableList<InMessage>.Empty;
+            Attachments = attachments ?? ImmutableList<InAttachment>.Empty;
+        }
+
+        public DateTime Date { get; }
+        public long SenderId { get; }
+        public long ChatId { get; }
+        public string? Text { get; }
+        public InMessage? Reply { get; }
+        public ImmutableList<InMessage> Forwarded { get; }
+        public ImmutableList<InAttachment> Attachments { get; }
     }
 }

@@ -2,14 +2,13 @@
 {
     public class InModelBase<TId>
     {
-        protected InModelBase()
+        public InModelBase(TId id, string messengerSource)
         {
+            Identifier = new Identifier<TId>(id, messengerSource);
         }
 
-        public InModelBase(TId id, string messengerSource)
-            => (Id, MessengerSource) = (id, messengerSource);
-
-        public TId Id { get; set; }
-        public string MessengerSource { get; set; }
+        public Identifier<TId> Identifier { get; set; }
+        public TId Id => Identifier.Id;
+        public string MessengerSource => Identifier.Messenger;
     }
 }

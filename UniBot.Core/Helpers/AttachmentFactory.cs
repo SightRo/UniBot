@@ -8,27 +8,22 @@ namespace UniBot.Core.Helpers
         public static FileAttachment CreateFileAttachment(string filePath, AttachmentType type = AttachmentType.Unknown)
         {
             var file = new FileInfo(filePath);
-            if(!file.Exists)
+            if (!file.Exists)
                 throw new FileNotFoundException($"File {filePath} not found");
 
-            return new FileAttachment
-            {
-                File = file,
-                AttachmentType = type == AttachmentType.Unknown ? DetectType(file.Extension) : type
-            };
+            type = type == AttachmentType.Unknown ? DetectType(file.Extension) : type;
+
+            return new FileAttachment(file, type);
         }
-        
-        public static MemoryAttachment CreateMemoryAttachment(string fullName, byte[] data, AttachmentType type = AttachmentType.Unknown)
+
+        public static MemoryAttachment CreateMemoryAttachment(string fullName, byte[] data,
+            AttachmentType type = AttachmentType.Unknown)
         {
+            var name = GetName(fullName);
             var extension = GetExtension(fullName);
-            
-            return new MemoryAttachment
-            {
-                Name = GetName(fullName),
-                Extension = extension,
-                AttachmentType = type == AttachmentType.Unknown ? DetectType(extension) : type,
-                Data = data
-            };
+            type = type == AttachmentType.Unknown ? DetectType(extension) : type;
+
+            return new MemoryAttachment(name, extension, type, data);
         }
 
         // TODO WTF. Find an elegant solution.
@@ -66,9 +61,9 @@ namespace UniBot.Core.Helpers
                 return string.Empty;
 
             int index = fullName.LastIndexOf(delimiter);
-            if (index > 0) 
+            if (index > 0)
                 return fullName.Substring(0, index);
-            
+
             return string.Empty;
         }
 

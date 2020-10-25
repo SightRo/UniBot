@@ -21,57 +21,33 @@ using VkUser = VkNet.Model.User;
 
 namespace UniBot.Vkontakte
 {
-    public static class VkConverter
+    internal static class VkConverter
     {
         public static InMessage? ToInMessage(VkMessage? message)
         {
             if (message == null)
                 return null;
 
+            // Need to explicitly declare type to avoid warning.
             ImmutableList<InMessage> forwardedMessages = message.ForwardedMessages
                 .Where(m => !(m is null))
                 .Select(ToInMessage)
                 .ToImmutableList()!;
 
-            var attachments = message.Attachments.Select(ToInAttachment).ToImmutableList();
+            var attachments = message.Attachments
+                .Select(ToInAttachment)
+                .ToImmutableList();
 
-            return new InMessage
-            {
-                Id = (long) message.Id!,
-                Date = (DateTime) message.Date!,
-                SenderId = message.FromId!.Value,
-                ChatId = message.PeerId!.Value,
-                Text = message.Text,
-                Reply = ToInMessage(message.ReplyMessage),
-                Forwarded = forwardedMessages,
-                Attachments = attachments,
-                MessengerSource = VkConstants.Name
-            };
-        }
-        
-        public static InMessage? ToInMessage(long chatId, PinnedMessage? message)
-        {
-            if (message == null)
-                return null;
-
-            ImmutableList<InMessage> forwardedMessages = message.ForwardMessages
-                .Where(m => !(m is null))
-                .Select(ToInMessage)
-                .ToImmutableList()!;
-
-            var attachments = message.Attachments.Select(ToInAttachment).ToImmutableList();
-
-            return new InMessage
-            {
-                Id = message.Id,
-                Date = message.Date,
-                SenderId = message.FromId,
-                ChatId = chatId,
-                Text = message.Text,
-                Forwarded = forwardedMessages,
-                Attachments = attachments,
-                MessengerSource = VkConstants.Name
-            };
+            return new InMessage(
+                (long) message.Id!,
+                VkConstants.Name,
+                message.Date!.Value,
+                message.FromId!.Value,
+                message.PeerId!.Value,
+                message.Text,
+                ToInMessage(message.ReplyMessage),
+                forwardedMessages,
+                attachments);
         }
 
         // Use only when sure it's chat is of type Chat 
@@ -88,35 +64,33 @@ namespace UniBot.Vkontakte
             if (chat.Peer.Type == ConversationPeerType.Email)
                 type = ChatType.Group;
 
-            return new Chat
-            {
-                Id = chatId,
-                Title = chat.ChatSettings.Title,
-                OwnerId = chat.ChatSettings.OwnerId,
-                Type = type,
-                Photos = ToInAttachment(chat.ChatSettings.Photo),
-                PinnedMessage = ToInMessage(chatId, chat.ChatSettings.PinnedMessage),
-                MessengerSource = VkConstants.Name
-            };
+            return new Chat(
+                chatId,
+                VkConstants.Name,
+                chat.ChatSettings.Title,
+                chat.ChatSettings.OwnerId,
+                type,
+                ToInAttachment(chat.ChatSettings.Photo),
+                ToInMessage(chatId, chat.ChatSettings.PinnedMessage));
         }
-        
+
         // Use only when sure it's chat is of type User 
         public static Chat? ToChat(long chatId, User? user)
         {
             if (user is null)
                 return null;
-            
-            return new Chat
-            {
-                Id = chatId,
+
+
+            return new Chat(
+                chatId,
+                VkConstants.Name,
                 // Is there any fix for that?
-                Title = user.FirstName + user.LastName ?? user.Username ?? "Chat",
-                OwnerId = chatId,
-                Type = ChatType.Private,
-                // Doesn't available for now
-                //Photos = ToInAttachment(chat.ChatSettings.Photo),
-                MessengerSource = VkConstants.Name
-            };
+                user.FirstName + user.LastName ?? user.Username ?? "Chat",
+                chatId,
+                ChatType.Private,
+                // Todo Find way to get user photo
+                null,
+                null);
         }
 
         public static InAttachment ToInAttachment(VkAttachment attachment)
@@ -158,7 +132,7 @@ namespace UniBot.Vkontakte
                         u.ToString()))
                 .ToImmutableList();
         }
-        
+
         public static MessageKeyboard? ToVkKeyboard(InlineKeyboard? keyboard)
         {
             if (keyboard == null)
@@ -198,29 +172,26 @@ namespace UniBot.Vkontakte
 
         public static User ToUser(VkGroup group)
         {
-            return new User
-            {
-                Id = group.Id,
-                Username = group.ScreenName,
-                FirstName = group.Name,
-                IsHuman = false,
-                MessengerSource = VkConstants.Name
-            };
+            return new User(
+                group.Id,
+                VkConstants.Name,
+                group.ScreenName,
+                group.Name,
+                null,
+                false);
         }
-        
+
         public static User ToUser(VkUser user)
         {
-            return new User
-            {
-                Id = user.Id,
-                Username = user.ScreenName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsHuman = true,
-                MessengerSource = VkConstants.Name
-            };
+            return new User(
+                user.Id,
+                VkConstants.Name,
+                user.ScreenName,
+                user.FirstName,
+                user.LastName,
+                true);
         }
-        
+
         public static MessageKeyboard? ToVkKeyboard(ReplyKeyboard? keyboard)
         {
             if (keyboard == null)
@@ -256,6 +227,30 @@ namespace UniBot.Vkontakte
                     }
                 };
             }
+        }
+
+        private static InMessage? ToInMessage(long chatId, PinnedMessage? message)
+        {
+            if (message == null)
+                return null;
+
+            ImmutableList<InMessage> forwardedMessages = message.ForwardMessages
+                .Where(m => !(m is null))
+                .Select(ToInMessage)
+                .ToImmutableList()!;
+
+            var attachments = message.Attachments.Select(ToInAttachment).ToImmutableList();
+
+            return new InMessage(
+                message.Id,
+                VkConstants.Name,
+                message.Date,
+                message.FromId,
+                chatId,
+                message.Text,
+                null,
+                forwardedMessages,
+                attachments);
         }
     }
 }

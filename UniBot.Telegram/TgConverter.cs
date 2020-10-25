@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using UniBot.Core.Abstraction;
 using UniBot.Core.Models;
 using UniBot.Core.Models.Attachments;
 using UniBot.Core.Models.Keyboards;
@@ -20,31 +17,29 @@ using TgChatType = Telegram.Bot.Types.Enums.ChatType;
 
 namespace UniBot.Telegram
 {
-    public static class TgConverter
+    internal static class TgConverter
     {
         public static InMessage? ToMessage(TgMessage? message)
         {
             if (message == null)
                 return null;
 
-            return new InMessage
-            {
-                Id = message.MessageId,
-                Date = message.Date,
-                SenderId = message.From.Id,
-                ChatId = message.Chat.Id,
-                Text = message.Text ?? message.Caption,
-                Reply = ToMessage(message.ReplyToMessage),
-                //Todo Implement Forwarded messages. 
-                //Forwarded = ImmutableList.Create<InMessage>(ToMessage())
-                Attachments = ExtractAttachments(message),
-                MessengerSource = TgConstants.Name
-            };
+
+            return new InMessage(
+                message.MessageId,
+                TgConstants.Name,
+                message.Date,
+                message.From.Id,
+                message.Chat.Id,
+                message.Text ?? message.Caption,
+                ToMessage(message.ReplyToMessage),
+                null,
+                ExtractAttachments(message));
         }
 
         public static Chat ToChat(TgChat chat, long ownerId)
         {
-            ImmutableList<InAttachment> photos = ImmutableList<InAttachment>.Empty;
+            ImmutableList<InAttachment>? photos = null;
             if (chat.Photo != null)
             {
                 photos = ImmutableList.Create(
@@ -53,46 +48,44 @@ namespace UniBot.Telegram
                 );
             }
 
-            return new Chat
+            var type = chat.Type switch
             {
-                Id = chat.Id,
-                Title = chat.Title ?? chat.Username,
-                OwnerId = ownerId,
-                Type = chat.Type switch
-                {
-                    TgChatType.Private => ChatType.Private,
-                    TgChatType.Channel => ChatType.Community,
-                    _ => ChatType.Group
-                },
-                Photos = photos,
-                MessengerSource = TgConstants.Name
+                TgChatType.Private => ChatType.Private,
+                TgChatType.Channel => ChatType.Community,
+                _ => ChatType.Group
             };
+
+
+            return new Chat(
+                chat.Id,
+                TgConstants.Name,
+                chat.Title ?? chat.Username,
+                ownerId,
+                type,
+                photos,
+                ToMessage(chat.PinnedMessage));
         }
 
         public static User ToUser(TgChat chat)
         {
-            return new User
-            {
-                Id = chat.Id,
-                Username = chat.Username,
-                FirstName = chat.FirstName,
-                LastName = chat.LastName,
-                IsHuman = true,
-                MessengerSource = TgConstants.Name
-            };
+            return new User(
+                chat.Id,
+                TgConstants.Name,
+                chat.Username,
+                chat.FirstName,
+                chat.LastName,
+                true);
         }
 
         public static User ToUser(TgUser user)
         {
-            return new User
-            {
-                Id = user.Id,
-                Username = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsHuman = !user.IsBot,
-                MessengerSource = TgConstants.Name
-            };
+            return new User(
+                user.Id,
+                TgConstants.Name,
+                user.Username,
+                user.FirstName,
+                user.LastName,
+                !user.IsBot);
         }
 
         public static IReplyMarkup? ToTgKeyboard(InlineKeyboard? keyboard)
@@ -146,7 +139,7 @@ namespace UniBot.Telegram
 
         public static InputMedia ToTgMedia(IOutAttachment attachment)
         {
-            var data = new MemoryStream(attachment.GetData());
+            var data = attachment.GetStream();
             return new InputMedia(data, attachment.FullName);
         }
 

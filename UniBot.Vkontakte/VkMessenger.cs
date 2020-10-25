@@ -46,7 +46,7 @@ namespace UniBot.Vkontakte
 
             foreach (var attachment in message.Attachments)
             {
-                MediaAttachment vkAttachment = attachment.AttachmentType switch
+                MediaAttachment vkAttachment = attachment.Type switch
                 {
                     AttachmentType.Audio => await UploadAudio(chatId, attachment),
                     AttachmentType.Voice => await UploadAudio(chatId, attachment),
@@ -158,7 +158,7 @@ namespace UniBot.Vkontakte
         private async Task<Document> UploadDocument(long chatId, IOutAttachment attachment)
         {
             var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.Doc);
-            var response = await UploadFile(server.UploadUrl, attachment.GetData(), attachment.FullName);
+            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.FullName);
             var documents = await _api.Docs.SaveAsync(response, attachment.FullName, null);
 
             if (documents.Count != 1)
@@ -170,7 +170,7 @@ namespace UniBot.Vkontakte
         private async Task<Photo> UploadPhoto(long chatId, IOutAttachment attachment)
         {
             var server = await _api.Photo.GetMessagesUploadServerAsync(chatId);
-            var response = await UploadFile(server.UploadUrl, attachment.GetData(), attachment.FullName);
+            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.FullName);
             var photos = await _api.Photo.SaveMessagesPhotoAsync(response);
 
             if (photos.Count != 1)
@@ -182,7 +182,7 @@ namespace UniBot.Vkontakte
         private async Task<AudioMessage> UploadAudio(long chatId, IOutAttachment attachment)
         {
             var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.AudioMessage);
-            var response = await UploadFile(server.UploadUrl, attachment.GetData(), attachment.Name);
+            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.Name);
             var documents = await _api.Docs.SaveAsync(response, attachment.Name, null);
 
             if (documents.Count != 1)
