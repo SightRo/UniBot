@@ -13,10 +13,12 @@ namespace UniBot.Core.Abstraction
         private readonly Dictionary<string, CommandBase> _commands = new Dictionary<string, CommandBase>();
         private readonly Dictionary<string, IMessenger> _messengers = new Dictionary<string, IMessenger>();
         private readonly List<IMessengerStartup> _messengerStartups = new List<IMessengerStartup>();
-
+        private readonly JobQueue _jobQueue;
+        
         public Bot(BotOptions botOptions)
         {
             BotOptions = botOptions;
+            _jobQueue = new JobQueue(botOptions.ExecutingOptions.ThreadsCount);
         }
 
         public BotOptions BotOptions { get; }
@@ -26,7 +28,13 @@ namespace UniBot.Core.Abstraction
         public void ProcessUpdate(UpdateContext context)
         {
             if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
-                GetCommand(commandName)?.Execute(context);
+            {
+                var command = GetCommand(commandName);
+                if (command is null)
+                    return;
+                
+                _jobQueue.Enqueue(new JobItem(command, context));
+            }
         }
 
         public CommandBase? GetCommand(string commandName)

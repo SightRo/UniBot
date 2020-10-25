@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace UniBot.Core.Utils
 {
-    public static class Reflector
+    internal static class Reflector
     {
         public static List<Type> FindInterfaceImplementations(Assembly assembly, string interfaceName)
         {
