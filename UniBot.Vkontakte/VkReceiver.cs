@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using UniBot.Core.Abstraction;
+using UniBot.Core.Annotations;
 using VkNet.Utils;
 using VkMessage = VkNet.Model.Message;
 

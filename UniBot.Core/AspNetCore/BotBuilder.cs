@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Actions;
+using UniBot.Core.Annotations;
 
 namespace UniBot.Core.AspNetCore
 {

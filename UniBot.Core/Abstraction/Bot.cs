@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
+using UniBot.Core.Annotations;
 using UniBot.Core.Settings;
 using UniBot.Core.Utils;
 

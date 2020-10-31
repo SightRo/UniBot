@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniBot.Core.Abstraction
+namespace UniBot.Core.Annotations
 {
     public class UpdateReceiverAttribute : Attribute
     {
