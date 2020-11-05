@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Abstraction;
-using UniBot.Core.Settings;
+using UniBot.Core.Options;
 using VkNet;
 using VkNet.Infrastructure;
 using VkNet.Model;

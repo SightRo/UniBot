@@ -4,7 +4,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Actions;
 using UniBot.Core.Annotations;
-using UniBot.Core.Settings;
+using UniBot.Core.Options;
 using UniBot.Core.Utils;
 
 namespace UniBot.Core.Abstraction

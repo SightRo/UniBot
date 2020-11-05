@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace UniBot.Core.Settings
+namespace UniBot.Core.Options
 {
     public class BotOptions
     {

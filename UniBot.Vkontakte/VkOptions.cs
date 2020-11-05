@@ -1,4 +1,4 @@
-﻿using UniBot.Core.Settings;
+﻿using UniBot.Core.Options;
 
 namespace UniBot.Vkontakte
 {

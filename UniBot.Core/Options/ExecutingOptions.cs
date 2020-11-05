@@ -1,4 +1,4 @@
-﻿namespace UniBot.Core.Settings
+﻿namespace UniBot.Core.Options
 {
     public class ExecutingOptions
     {
