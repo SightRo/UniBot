@@ -24,14 +24,14 @@ namespace UniBot.Core.Utils
             {
                 Task.Run(async () =>
                 {
-                    while (await _channel.Reader.WaitToReadAsync())
+                    while (await _channel.Reader.WaitToReadAsync().ConfigureAwait(false))
                     {
-                        var job = await _channel.Reader.ReadAsync();
+                        var job = await _channel.Reader.ReadAsync().ConfigureAwait(false);
                         var action = job.Action;
                         var context = job.Context;
                         
                         if (action.CanExecute(context))
-                            await action.Execute(context);
+                            await action.Execute(context).ConfigureAwait(false);
                     }
                 });
             }

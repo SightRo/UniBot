@@ -24,7 +24,7 @@ namespace UniBot.Telegram
         [HttpPost]
         public async Task<IActionResult> UpdateReceiver([FromBody] Update update)
         {
-            var context = await CreateContext(update);
+            var context = await CreateContext(update).ConfigureAwait(false);
             // Dangerous thing
             // Can skip message if context couldn't be created
             if (context != null)
@@ -44,7 +44,7 @@ namespace UniBot.Telegram
                     // The only way to create chat with ownerId.
                     // GetChat can pass ownerId to Converter.ToChat().
                     var messenger = _bot.ResolveMessenger(message.MessengerSource);
-                    var chat = await messenger.GetChat(update.Message.Chat.Id);
+                    var chat = await messenger.GetChat(update.Message.Chat.Id).ConfigureAwait(false);
 
                     return new UpdateContext(messenger, chat, user, message);
                 }

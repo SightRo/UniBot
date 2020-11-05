@@ -29,7 +29,7 @@ namespace UniBot.Vkontakte
                 case "confirmation":
                     return Ok(_messenger.ConfirmationCode);
                 default:
-                    var context = await CreateUpdateContext(update);
+                    var context = await CreateUpdateContext(update).ConfigureAwait(false);
                     // Dangerous thing
                     // Can skip message if context couldn't be created
                     if (context != null)
@@ -47,8 +47,8 @@ namespace UniBot.Vkontakte
                 case "message_new":
                     var originalMessage = VkMessage.FromJson(new VkResponse(update.Object));
                     var message = VkConverter.ToInMessage(originalMessage);
-                    var chat = await _messenger.GetChat(originalMessage.PeerId!.Value);
-                    var sender = await _messenger.GetUser(originalMessage.FromId!.Value);
+                    var chat = await _messenger.GetChat(originalMessage.PeerId!.Value).ConfigureAwait(false);
+                    var sender = await _messenger.GetUser(originalMessage.FromId!.Value).ConfigureAwait(false);
                     return new UpdateContext(_messenger, chat, sender, message);
                 default:
                     return null;

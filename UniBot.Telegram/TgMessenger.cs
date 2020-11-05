@@ -43,10 +43,10 @@ namespace UniBot.Telegram
             var videoMediaGroup = videos.Select(TgConverter.ToTgVideo);
 
             if (photos.Count > 0)
-                result.AddRange((await _api.SendMediaGroupAsync(photoMediaGroup, chatId))
+                result.AddRange((await _api.SendMediaGroupAsync(photoMediaGroup, chatId).ConfigureAwait(false))
                     .Select(a => (long) a.MessageId));
             if (videos.Count > 0)
-                result.AddRange((await _api.SendMediaGroupAsync(videoMediaGroup, chatId))
+                result.AddRange((await _api.SendMediaGroupAsync(videoMediaGroup, chatId).ConfigureAwait(false))
                     .Select(a => (long) a.MessageId));
 
             foreach (var attachment in others)
@@ -54,13 +54,19 @@ namespace UniBot.Telegram
                 switch (attachment.Type)
                 {
                     case AttachmentType.Audio:
-                        result.Add((await _api.SendAudioAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
+                        var sentAudio = await _api.SendAudioAsync(chatId, TgConverter.ToTgMedia(attachment))
+                            .ConfigureAwait(false);
+                        result.Add(sentAudio.MessageId);
                         break;
                     case AttachmentType.Voice:
-                        result.Add((await _api.SendVoiceAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
+                        var sentVoice = await _api.SendVoiceAsync(chatId, TgConverter.ToTgMedia(attachment))
+                            .ConfigureAwait(false);
+                        result.Add(sentVoice.MessageId);
                         break;
                     default:
-                        result.Add((await _api.SendDocumentAsync(chatId, TgConverter.ToTgMedia(attachment))).MessageId);
+                        var sendDocument = await _api.SendDocumentAsync(chatId, TgConverter.ToTgMedia(attachment))
+                            .ConfigureAwait(false);
+                        result.Add(sendDocument.MessageId);
                         break;
                 }
             }
@@ -72,7 +78,9 @@ namespace UniBot.Telegram
                 _ => message.RemoveReplyKeyboard ? new ReplyKeyboardRemove() : null
             };
 
-            result.Add((await _api.SendTextMessageAsync(chatId, message.Text, replyMarkup: keyboard)).MessageId);
+            var sentMessage = await _api.SendTextMessageAsync(chatId, message.Text, replyMarkup: keyboard)
+                .ConfigureAwait(false);
+            result.Add(sentMessage.MessageId);
 
             return result;
         }
@@ -81,7 +89,7 @@ namespace UniBot.Telegram
         {
             try
             {
-                await _api.DeleteMessageAsync(chatId, (int) messageId);
+                await _api.DeleteMessageAsync(chatId, (int) messageId).ConfigureAwait(false);
                 return true;
             }
             catch
@@ -96,7 +104,7 @@ namespace UniBot.Telegram
         {
             try
             {
-                await _api.EditMessageTextAsync((int) chatId, (int) messageId, message.Text);
+                await _api.EditMessageTextAsync((int) chatId, (int) messageId, message.Text).ConfigureAwait(false);
                 return true;
             }
             catch
@@ -107,11 +115,11 @@ namespace UniBot.Telegram
 
         public async Task<MemoryAttachment?> DownloadAttachment(InAttachment inAttachment)
         {
-            var file = await _api.GetFileAsync(inAttachment.Id);
+            var file = await _api.GetFileAsync(inAttachment.Id).ConfigureAwait(false);
             var url = $"https://api.telegram.org/file/bot{_options.Token}/{file.FilePath}";
             // Todo Change Attachment system.
             using var client = new HttpClient();
-            var response = await client.GetByteArrayAsync(url);
+            var response = await client.GetByteArrayAsync(url).ConfigureAwait(false);
 
             // Todo Refactor this.
             int index = file.FilePath.LastIndexOf('/');
@@ -122,18 +130,18 @@ namespace UniBot.Telegram
 
         public async Task<User?> GetUser(long userId)
         {
-            var user = await _api.GetChatAsync(userId);
+            var user = await _api.GetChatAsync(userId).ConfigureAwait(false);
             return TgConverter.ToUser(user);
         }
 
         public async Task<Chat?> GetChat(long chatId)
         {
-            var chat = await _api.GetChatAsync(chatId);
+            var chat = await _api.GetChatAsync(chatId).ConfigureAwait(false);
 
             var ownerId = chat.Type switch
             {
                 TgChatType.Private => chat.Id,
-                _ => (await _api.GetChatAdministratorsAsync(chatId))
+                _ => (await _api.GetChatAdministratorsAsync(chatId).ConfigureAwait(false))
                     .First(u => u.Status == ChatMemberStatus.Creator).User.Id
             };
 
@@ -143,7 +151,8 @@ namespace UniBot.Telegram
         public object GetNativeObject()
             => _api;
 
-        private void GroupAttachments(ICollection<IOutAttachment> attachments, out List<IOutAttachment> photos, out List<IOutAttachment> videos, out List<IOutAttachment> others)
+        private void GroupAttachments(ICollection<IOutAttachment> attachments, out List<IOutAttachment> photos,
+            out List<IOutAttachment> videos, out List<IOutAttachment> others)
         {
             photos = new List<IOutAttachment>();
             videos = new List<IOutAttachment>();

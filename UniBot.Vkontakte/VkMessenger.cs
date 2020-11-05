@@ -36,7 +36,7 @@ namespace UniBot.Vkontakte
             ConfirmationCode = confirmationCode;
         }
 
-        public string ConfirmationCode { get;}
+        public string ConfirmationCode { get; }
 
         public string Name => VkConstants.Name;
 
@@ -48,10 +48,10 @@ namespace UniBot.Vkontakte
             {
                 MediaAttachment vkAttachment = attachment.Type switch
                 {
-                    AttachmentType.Audio => await UploadAudio(chatId, attachment),
-                    AttachmentType.Voice => await UploadAudio(chatId, attachment),
-                    AttachmentType.Photo => await UploadPhoto(chatId, attachment),
-                    _ => await UploadDocument(chatId, attachment),
+                    AttachmentType.Audio => await UploadAudio(chatId, attachment).ConfigureAwait(false),
+                    AttachmentType.Voice => await UploadAudio(chatId, attachment).ConfigureAwait(false),
+                    AttachmentType.Photo => await UploadPhoto(chatId, attachment).ConfigureAwait(false),
+                    _ => await UploadDocument(chatId, attachment).ConfigureAwait(false)
                 };
                 attachments.Add(vkAttachment);
             }
@@ -73,18 +73,26 @@ namespace UniBot.Vkontakte
                             : null
                     },
                     Attachments = attachments
-                })
+                }).ConfigureAwait(false)
             };
 
             return result;
         }
 
         public async Task<bool> DeleteMessage(long chatId, long messageId)
-            => (await _api.Messages.DeleteAsync(new[] {(ulong) messageId}, groupId: (ulong) chatId)).First().Value;
+        {
+            var deletedIds = await _api.Messages.DeleteAsync(new[] {(ulong) messageId}, groupId: (ulong) chatId)
+                .ConfigureAwait(false);
+            return deletedIds.First().Value;
+        }
 
 
-        public Task<bool> EditMessage(long chatId, long messageId, OutMessage message)
-            => _api.Messages.EditAsync(new MessageEditParams {PeerId = messageId, Message = message.Text});
+        public async Task<bool> EditMessage(long chatId, long messageId, OutMessage message)
+        {
+            var success = await _api.Messages
+                .EditAsync(new MessageEditParams {PeerId = messageId, Message = message.Text}).ConfigureAwait(false);
+            return success;
+        }
 
 
         public async Task<MemoryAttachment?> DownloadAttachment(InAttachment attachment)
@@ -93,7 +101,7 @@ namespace UniBot.Vkontakte
                 return null;
 
             using var client = new WebClient();
-            var data = await client.DownloadDataTaskAsync(attachment.UrlSource);
+            var data = await client.DownloadDataTaskAsync(attachment.UrlSource).ConfigureAwait(false);
             string name = attachment.Type switch
             {
                 AttachmentType.Audio => $"Audio{DateTime.Now.Ticks}.mp3",
@@ -112,8 +120,8 @@ namespace UniBot.Vkontakte
         {
             var user = (userId > 0) switch
             {
-                true => await GetUserFromVk(userId),
-                false => await GetGroupFromVk(userId)
+                true => await GetUserFromVk(userId).ConfigureAwait(false),
+                false => await GetGroupFromVk(userId).ConfigureAwait(false)
             };
 
             return user;
@@ -122,15 +130,15 @@ namespace UniBot.Vkontakte
         public async Task<Chat?> GetChat(long chatId)
         {
             // Fixed shit with admin status, but not sure
-            var chats = await _api.Messages.GetConversationsByIdAsync(new[] {chatId});
+            var chats = await _api.Messages.GetConversationsByIdAsync(new[] {chatId}).ConfigureAwait(false);
 
             if (chats.Count != 1)
             {
-                if (!await IsBotAdmin(chatId))
+                if (!await IsBotAdmin(chatId).ConfigureAwait(false))
                 {
                     // Todo Make configurable behavior for those kind of cases
                     var message = new OutMessage {Text = "Бот не может работать корректно без прав администратора."};
-                    await SendMessage(chatId, message);
+                    await SendMessage(chatId, message).ConfigureAwait(false);
                 }
 
                 return null;
@@ -140,7 +148,7 @@ namespace UniBot.Vkontakte
 
             if (chat.Peer.Type == ConversationPeerType.User)
             {
-                var user = await GetUser(chatId);
+                var user = await GetUser(chatId).ConfigureAwait(false);
                 return VkConverter.ToChat(chatId, user);
             }
 
@@ -157,9 +165,12 @@ namespace UniBot.Vkontakte
 
         private async Task<Document> UploadDocument(long chatId, IOutAttachment attachment)
         {
-            var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.Doc);
-            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.FullName);
-            var documents = await _api.Docs.SaveAsync(response, attachment.FullName, null);
+            var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.Doc)
+                .ConfigureAwait(false);
+            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.FullName)
+                .ConfigureAwait(false);
+            var documents = await _api.Docs.SaveAsync(response, attachment.FullName, null)
+                .ConfigureAwait(false);
 
             if (documents.Count != 1)
                 throw new Exception($"Error while loading document to {Name}");
@@ -169,9 +180,12 @@ namespace UniBot.Vkontakte
 
         private async Task<Photo> UploadPhoto(long chatId, IOutAttachment attachment)
         {
-            var server = await _api.Photo.GetMessagesUploadServerAsync(chatId);
-            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.FullName);
-            var photos = await _api.Photo.SaveMessagesPhotoAsync(response);
+            var server = await _api.Photo.GetMessagesUploadServerAsync(chatId)
+                .ConfigureAwait(false);
+            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.FullName)
+                .ConfigureAwait(false);
+            var photos = await _api.Photo.SaveMessagesPhotoAsync(response)
+                .ConfigureAwait(false);
 
             if (photos.Count != 1)
                 throw new Exception($"Error while loading photo to {Name}");
@@ -181,9 +195,12 @@ namespace UniBot.Vkontakte
 
         private async Task<AudioMessage> UploadAudio(long chatId, IOutAttachment attachment)
         {
-            var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.AudioMessage);
-            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.Name);
-            var documents = await _api.Docs.SaveAsync(response, attachment.Name, null);
+            var server = await _api.Docs.GetMessagesUploadServerAsync(chatId, DocMessageType.AudioMessage)
+                .ConfigureAwait(false);
+            var response = await UploadFile(server.UploadUrl, attachment.GetByteArray(), attachment.Name)
+                .ConfigureAwait(false);
+            var documents = await _api.Docs.SaveAsync(response, attachment.Name, null)
+                .ConfigureAwait(false);
 
             if (documents.Count != 1)
                 throw new Exception($"Error while loading audio to {Name}");
@@ -193,8 +210,8 @@ namespace UniBot.Vkontakte
 
         private async Task<User?> GetUserFromVk(long id)
         {
-            var users = await _api.Users.GetAsync(new[] {id}, ProfileFields.ScreenName);
-            if (users.Count != 1) 
+            var users = await _api.Users.GetAsync(new[] {id}, ProfileFields.ScreenName).ConfigureAwait(false);
+            if (users.Count != 1)
                 return null;
 
             var user = users.First();
@@ -204,9 +221,10 @@ namespace UniBot.Vkontakte
 
         private async Task<User?> GetGroupFromVk(long id)
         {
-            var groups = await _api.Groups.GetByIdAsync(new string[0], id.ToString(), GroupsFields.Status);
+            var groups = await _api.Groups.GetByIdAsync(new string[0], id.ToString(), GroupsFields.Status)
+                .ConfigureAwait(false);
 
-            if (groups.Count != 1) 
+            if (groups.Count != 1)
                 return null;
 
             var group = groups.First();
@@ -218,7 +236,7 @@ namespace UniBot.Vkontakte
         {
             try
             {
-                await _api.Messages.GetConversationMembersAsync(chatId, new string[0]);
+                await _api.Messages.GetConversationMembersAsync(chatId, new string[0]).ConfigureAwait(false);
                 return true;
             }
             catch
@@ -235,10 +253,11 @@ namespace UniBot.Vkontakte
             dataContent.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
             requestContent.Add(dataContent, "file", fileName);
 
-            var response = await client.PostAsync(url, requestContent);
+            var response = await client.PostAsync(url, requestContent).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            return Encoding.ASCII.GetString(await response.Content.ReadAsByteArrayAsync());
+            var responseJson = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            return Encoding.ASCII.GetString(responseJson);
         }
     }
 }
