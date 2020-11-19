@@ -4,28 +4,28 @@ namespace UniBot.Core.Models.Attachments
 {
     public class FileAttachment : IOutAttachment
     {
-        public FileAttachment(FileInfo file, AttachmentType type)
+        public FileAttachment(FileInfo fileInfo, AttachmentType type)
         {
-            File = file;
+            FileInfo = fileInfo;
             Type = type;
         }
 
         public FileAttachment(string pathToFile, AttachmentType type)
         {
-            File = new FileInfo(pathToFile);
+            FileInfo = new FileInfo(pathToFile);
             Type = type;
         }
 
-        public string Name => File.Name;
-        public string Extension => File.Extension;
-        public string FullName => File.FullName;
-        public FileInfo File { get; }
+        public string Name => FileInfo.Name;
+        public string Extension => FileInfo.Extension;
+        public string FullName => FileInfo.FullName;
+        public FileInfo FileInfo { get; }
         public AttachmentType Type { get; }
 
         public byte[] GetByteArray()
-            => System.IO.File.ReadAllBytes(File.FullName);
+            => File.ReadAllBytes(FileInfo.FullName);
 
         public Stream GetStream()
-            => new FileStream(File.FullName, FileMode.Open);
+            => new FileStream(FileInfo.FullName, FileMode.Open);
     }
 }

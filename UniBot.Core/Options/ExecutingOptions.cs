@@ -2,6 +2,6 @@
 {
     public class ExecutingOptions
     {
-        public int ThreadsCount { get; set; } = 8;
+        public int ThreadsCount { get; init; } = 8;
     }
 }

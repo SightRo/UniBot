@@ -10,7 +10,10 @@ namespace UniBot.Core.Models
         {
         }
 
-        public OutMessage(string text, IKeyboard? keyboard = null, bool removeReplyKeyboard = false,
+        public OutMessage(
+            string text, 
+            IKeyboard? keyboard = null, 
+            bool removeReplyKeyboard = false,
             ICollection<IOutAttachment>? attachments = null)
         {
             Text = text;

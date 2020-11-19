@@ -22,10 +22,10 @@ namespace UniBot.Core.Models
             PinnedMessage = pinnedMessage;
         }
 
-        public string Title { get; }
-        public long OwnerId { get; }
-        public ChatType Type { get; }
-        public ImmutableList<InAttachment> Photos { get; }
-        public InMessage? PinnedMessage { get; }
+        public string Title { get; init; }
+        public long OwnerId { get; init; }
+        public ChatType Type { get; init; }
+        public ImmutableList<InAttachment> Photos { get; init; }
+        public InMessage? PinnedMessage { get; init; }
     }
 }

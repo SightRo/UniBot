@@ -7,7 +7,7 @@
             Identifier = new Identifier<TId>(id, messengerSource);
         }
 
-        public Identifier<TId> Identifier { get; set; }
+        public Identifier<TId> Identifier { get; init; }
         public TId Id => Identifier.Id;
         public string MessengerSource => Identifier.Messenger;
     }

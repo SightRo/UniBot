@@ -17,9 +17,9 @@
             IsHuman = isHuman;
         }
 
-        public string? Username { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public bool IsHuman { get; set; }
+        public string? Username { get; init; }
+        public string? FirstName { get; init; }
+        public string? LastName { get; init; }
+        public bool IsHuman { get; init; }
     }
 }

@@ -8,8 +8,8 @@ namespace UniBot.Core.Models.Keyboards
         public InlineButton(string text, string? link = null)
             => (Text, Link, CallbackData) = (text, link, Guid.NewGuid().ToString());
 
-        public string Text { get; }
-        public string? Link { get; }
-        public string CallbackData { get; }
+        public string Text { get; init; }
+        public string? Link { get; init; }
+        public string CallbackData { get; init; }
     }
 }

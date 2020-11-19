@@ -27,12 +27,12 @@ namespace UniBot.Core.Models
             Attachments = attachments ?? ImmutableList<InAttachment>.Empty;
         }
 
-        public DateTime Date { get; }
-        public long SenderId { get; }
-        public long ChatId { get; }
-        public string? Text { get; }
-        public InMessage? Reply { get; }
-        public ImmutableList<InMessage> Forwarded { get; }
-        public ImmutableList<InAttachment> Attachments { get; }
+        public DateTime Date { get; init; }
+        public long SenderId { get; init; }
+        public long ChatId { get; init; }
+        public string? Text { get; init; }
+        public InMessage? Reply { get; init; }
+        public ImmutableList<InMessage> Forwarded { get; init; }
+        public ImmutableList<InAttachment> Attachments { get; init; }
     }
 }

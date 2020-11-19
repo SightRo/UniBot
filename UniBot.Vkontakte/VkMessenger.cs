@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Helpers;
 using UniBot.Core.Models;
@@ -20,8 +18,6 @@ using VkNet.Model.Keyboard;
 using VkNet.Model.RequestParams;
 using Chat = UniBot.Core.Models.Chat;
 using User = UniBot.Core.Models.User;
-using VkMessage = VkNet.Model.Message;
-using VkSticker = VkNet.Model.Attachments.Sticker;
 
 
 namespace UniBot.Vkontakte
@@ -100,8 +96,8 @@ namespace UniBot.Vkontakte
             if (attachment.UrlSource == null)
                 return null;
 
-            using var client = new WebClient();
-            var data = await client.DownloadDataTaskAsync(attachment.UrlSource).ConfigureAwait(false);
+            using var client = new HttpClient();
+            var data = await client.GetByteArrayAsync(attachment.UrlSource).ConfigureAwait(false);
             string name = attachment.Type switch
             {
                 AttachmentType.Audio => $"Audio{DateTime.Now.Ticks}.mp3",

@@ -7,7 +7,7 @@ namespace UniBot.Core.Models.Keyboards
         public ReplyKeyboard(List<List<ReplyButton>> buttons, bool oneTime)
             => (Buttons, OneTime) = (buttons, oneTime);
         
-        public List<List<ReplyButton>> Buttons { get; }
-        public bool OneTime { get; }
+        public List<List<ReplyButton>> Buttons { get; init; }
+        public bool OneTime { get; init; }
     }
 }

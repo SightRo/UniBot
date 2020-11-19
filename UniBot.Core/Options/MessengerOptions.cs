@@ -3,8 +3,8 @@
     // TODO Make validation.
     public class MessengerOptions
     {
-        public string Token { get; set; } = null!;
-        public long BotOwnerId { get; set; } = 0;
-        public long[] BotAdminIds { get; set; } = new long[0];
+        public string Token { get; init; } = null!;
+        public long BotOwnerId { get; init; } = 0;
+        public long[] BotAdminIds { get; init; } = new long[0];
     }
 }

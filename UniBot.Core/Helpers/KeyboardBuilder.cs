@@ -6,14 +6,14 @@ namespace UniBot.Core.Helpers
 {
     public class KeyboardBuilder
     {
-        public KeyboardBuilder(bool isInline)
-            => _isInline = isInline;
-        
-        private Lazy<List<List<ReplyButton>>> _replyButtons = new Lazy<List<List<ReplyButton>>>();
-        private Lazy<List<List<InlineButton>>> _inlineButtons = new Lazy<List<List<InlineButton>>>();
+        private readonly Lazy<List<List<ReplyButton>>> _replyButtons = new Lazy<List<List<ReplyButton>>>();
+        private readonly Lazy<List<List<InlineButton>>> _inlineButtons = new Lazy<List<List<InlineButton>>>();
         private bool _isInline = false;
         private bool _isOneTime = false;
         private int _currentLine = 0;
+
+        public KeyboardBuilder(bool isInline)
+            => _isInline = isInline;
 
         public KeyboardBuilder AddButton(string text, string? link = null)
         {

@@ -1,5 +1,7 @@
 ﻿using System.Threading.Channels;
 using System.Threading.Tasks;
+using UniBot.Core.Abstraction;
+using UniBot.Core.Actions;
 
 namespace UniBot.Core.Utils
 {
@@ -27,8 +29,7 @@ namespace UniBot.Core.Utils
                     while (await _channel.Reader.WaitToReadAsync().ConfigureAwait(false))
                     {
                         var job = await _channel.Reader.ReadAsync().ConfigureAwait(false);
-                        var action = job.Action;
-                        var context = job.Context;
+                        (IAction action, UpdateContext context) = job;
                         
                         if (action.CanExecute(context))
                             await action.Execute(context).ConfigureAwait(false);

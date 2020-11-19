@@ -17,18 +17,15 @@ namespace UniBot.Core.AspNetCore
         {
             _bot = bot;
             _services = services;
+            services.AddHttpClient("BotHttpClient");
         }
 
         public BotBuilder DetectCommands()
         {
-            // TODO Find an elegant solution.
             var commands = AppDomain.CurrentDomain
                                     .GetAssemblies()
                                     .SelectMany(ass => ass.GetTypes())
-                                    .Where(x => 
-                                        string.CompareOrdinal(typeof(CommandBase).ToString(), x?.BaseType?.ToString() ?? string.Empty) == 0 
-                                        && !x.IsInterface 
-                                        && !x.IsAbstract);
+                                    .Where(x => x.IsSubclassOf(typeof(CommandBase)));
 
             foreach (var command in commands)
                 AddCommand(command);

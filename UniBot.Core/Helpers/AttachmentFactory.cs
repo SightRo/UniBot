@@ -11,7 +11,9 @@ namespace UniBot.Core.Helpers
             if (!file.Exists)
                 throw new FileNotFoundException($"File {filePath} not found");
 
-            type = type == AttachmentType.Unknown ? DetectType(file.Extension) : type;
+            type = type == AttachmentType.Unknown 
+                ? DetectType(file.Extension) 
+                : type;
 
             return new FileAttachment(file, type);
         }

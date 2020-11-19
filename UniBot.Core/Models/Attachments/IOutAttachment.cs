@@ -6,7 +6,7 @@ namespace UniBot.Core.Models.Attachments
     {
         string Name { get; }
         string Extension { get; }
-        virtual string FullName => Name + Extension;
+        string FullName { get; }
         AttachmentType Type { get; }
 
         byte[] GetByteArray();
