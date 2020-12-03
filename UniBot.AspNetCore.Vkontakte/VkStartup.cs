@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UniBot.Core;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Options;
 using VkNet;
@@ -8,16 +9,15 @@ using VkNet.Infrastructure;
 using VkNet.Model;
 using VkNet.Model.RequestParams;
 
-namespace UniBot.Vkontakte
+namespace UniBot.AspNetCore.Vkontakte
 {
     public class VkStartup : IMessengerStartup
     {
         private const string ServerName = "UniBot.Vk";
 
-        public void Init(Bot bot, IServiceCollection services, out IMessenger messenger)
+        public void Init(IBot bot, out IMessenger messenger)
         {
             var vkOptions = bot.BotOptions.MessengerOptions[VkConstants.Name].Get<VkOptions>();
-            services.Configure<VkOptions>(bot.BotOptions.MessengerOptions[VkConstants.Name]);
 
             var api = new VkApi();
             api.Authorize(new ApiAuthParams
@@ -30,7 +30,6 @@ namespace UniBot.Vkontakte
             var confirmationCode = AddCallbackServer(api, bot.BotOptions, vkOptions);
 
             messenger = new VkMessenger(api, confirmationCode);
-            services.AddSingleton(messenger);
         }
 
         private void DeleteCallbackServer(VkApi api, VkOptions options)

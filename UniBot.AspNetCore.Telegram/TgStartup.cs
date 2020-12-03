@@ -4,16 +4,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MihaZupan;
 using Telegram.Bot;
+using UniBot.Core;
 using UniBot.Core.Abstraction;
 
-namespace UniBot.Telegram
+namespace UniBot.AspNetCore.Telegram
 {
     public class TgStartup : IMessengerStartup
     {
-        public void Init(Bot bot, IServiceCollection services, out IMessenger messenger)
+        public void Init(IBot bot, out IMessenger messenger)
         {
             var tgOptions = bot.BotOptions.MessengerOptions[TgConstants.Name].Get<TgOptions>();
-            services.Configure<TgOptions>(bot.BotOptions.MessengerOptions[TgConstants.Name]);
 
             var proxy = GetProxy(tgOptions);
             var api = proxy != null
@@ -30,7 +30,6 @@ namespace UniBot.Telegram
             }
 
             messenger = new TgMessenger(api, tgOptions);
-            services.AddSingleton(messenger);
         }
 
         private IWebProxy? GetProxy(TgOptions options)

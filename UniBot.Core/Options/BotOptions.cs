@@ -6,7 +6,7 @@ namespace UniBot.Core.Options
     public class BotOptions
     {
         public string Endpoint { get; init; }
-        public ExecutingOptions ExecutingOptions { get; init; } = new ExecutingOptions();
+        public ExecutingOptions ExecutingOptions { get; init; } = new();
         public Dictionary<string, IConfigurationSection> MessengerOptions { get; init; }
     }
 }

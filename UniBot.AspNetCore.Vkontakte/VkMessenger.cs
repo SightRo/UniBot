@@ -20,16 +20,18 @@ using Chat = UniBot.Core.Models.Chat;
 using User = UniBot.Core.Models.User;
 
 
-namespace UniBot.Vkontakte
+namespace UniBot.AspNetCore.Vkontakte
 {
     public class VkMessenger : IMessenger
     {
         private readonly IVkApi _api;
+        private readonly HttpClient _client;
 
-        public VkMessenger(IVkApi api, string confirmationCode)
+        public VkMessenger(IVkApi api, string confirmationCode, HttpClient? client = null)
         {
             _api = api;
             ConfirmationCode = confirmationCode;
+            _client = client ?? new HttpClient();
         }
 
         public string ConfirmationCode { get; }
@@ -96,8 +98,7 @@ namespace UniBot.Vkontakte
             if (attachment.UrlSource == null)
                 return null;
 
-            using var client = new HttpClient();
-            var data = await client.GetByteArrayAsync(attachment.UrlSource).ConfigureAwait(false);
+            var data = await _client.GetByteArrayAsync(attachment.UrlSource).ConfigureAwait(false);
             string name = attachment.Type switch
             {
                 AttachmentType.Audio => $"Audio{DateTime.Now.Ticks}.mp3",
@@ -243,13 +244,12 @@ namespace UniBot.Vkontakte
 
         private async Task<string> UploadFile(string url, byte[] data, string fileName)
         {
-            using var client = new HttpClient();
             var requestContent = new MultipartFormDataContent();
             var dataContent = new ByteArrayContent(data);
             dataContent.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
             requestContent.Add(dataContent, "file", fileName);
 
-            var response = await client.PostAsync(url, requestContent).ConfigureAwait(false);
+            var response = await _client.PostAsync(url, requestContent).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var responseJson = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);

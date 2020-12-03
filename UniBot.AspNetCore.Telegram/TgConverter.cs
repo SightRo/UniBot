@@ -15,7 +15,7 @@ using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
 using TgChatType = Telegram.Bot.Types.Enums.ChatType;
 
-namespace UniBot.Telegram
+namespace UniBot.AspNetCore.Telegram
 {
     internal static class TgConverter
     {

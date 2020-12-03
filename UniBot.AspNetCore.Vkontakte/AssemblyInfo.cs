@@ -1,4 +1,4 @@
 ﻿using UniBot.Core.Annotations;
-using UniBot.Vkontakte;
+using UniBot.AspNetCore.Vkontakte;
 
 [assembly: MessengerImpl(VkConstants.Name)]

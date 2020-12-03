@@ -1,6 +1,6 @@
 ﻿using UniBot.Core.Options;
 
-namespace UniBot.Telegram
+namespace UniBot.AspNetCore.Telegram
 {
     public class TgOptions : MessengerOptions
     {

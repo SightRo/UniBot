@@ -1,6 +1,6 @@
-﻿using UniBot.Core.Models;
+﻿using UniBot.Core.Abstraction;
 
-namespace UniBot.Core.Abstraction
+namespace UniBot.Core.Models
 {
     public class UpdateContext
     {

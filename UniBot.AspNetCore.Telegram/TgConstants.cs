@@ -1,4 +1,4 @@
-﻿namespace UniBot.Telegram
+﻿namespace UniBot.AspNetCore.Telegram
 {
     public static class TgConstants
     {

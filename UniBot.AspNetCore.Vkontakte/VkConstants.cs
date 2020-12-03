@@ -1,4 +1,4 @@
-﻿namespace UniBot.Vkontakte
+﻿namespace UniBot.AspNetCore.Vkontakte
 {
     public class VkConstants
     {

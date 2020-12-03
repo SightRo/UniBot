@@ -1,20 +1,22 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UniBot.Core;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Annotations;
+using UniBot.Core.Models;
 using VkNet.Utils;
 using VkMessage = VkNet.Model.Message;
 
-namespace UniBot.Vkontakte
+namespace UniBot.AspNetCore.Vkontakte
 {
     [UpdateReceiver(VkConstants.Name)]
     [Route(VkConstants.Endpoint)]
     public class VkReceiver : ControllerBase
     {
-        private readonly Bot _bot;
+        private readonly IBot _bot;
         private readonly VkMessenger _messenger;
 
-        public VkReceiver(Bot bot)
+        public VkReceiver(IBot bot)
         {
             _bot = bot;
             _messenger = bot.ResolveMessenger(VkConstants.Name) as VkMessenger;

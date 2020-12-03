@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using UniBot.Core.AspNetCore;
+using UniBot.AspNetCore;
 
 namespace UniBot.Example
 {
@@ -21,11 +21,12 @@ namespace UniBot.Example
         {
             services.AddControllers()
                 .AddNewtonsoftJson();
-            
-            services.AddBot(Configuration)
-                    .DetectMessengerImplementations()
+
+            services.AddUniBot(builder =>
+                builder.DetectMessengerImplementations()
                     .DetectCommands()
-                    .Build();
+                    .Build()
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,7 +38,6 @@ namespace UniBot.Example
             }
 
             app.UseRouting();
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

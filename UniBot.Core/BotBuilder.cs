@@ -1,31 +1,39 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Actions;
 using UniBot.Core.Annotations;
+using UniBot.Core.Options;
 
-namespace UniBot.Core.AspNetCore
+namespace UniBot.Core
 {
     public class BotBuilder
     {
-        private readonly Bot _bot;
-        private readonly IServiceCollection _services;
-        
-        public BotBuilder(Bot bot, IServiceCollection services)
+        private readonly IBot _bot;
+
+        public BotBuilder(BotOptions options)
         {
-            _bot = bot;
-            _services = services;
-            services.AddHttpClient("BotHttpClient");
+            _bot = new Bot(options);
         }
 
         public BotBuilder DetectCommands()
         {
             var commands = AppDomain.CurrentDomain
-                                    .GetAssemblies()
-                                    .SelectMany(ass => ass.GetTypes())
-                                    .Where(x => x.IsSubclassOf(typeof(CommandBase)));
+                .GetAssemblies()
+                .SelectMany(ass => ass.GetTypes())
+                .Where(x => x.IsSubclassOf(typeof(CommandBase)));
+
+            foreach (var command in commands)
+                AddCommand(command);
+
+            return this;
+        }
+
+        public BotBuilder DetectCommandsFromAssembly(Assembly assembly)
+        {
+            var commands = assembly.GetTypes()
+                .Where(x => x.IsSubclassOf(typeof(CommandBase)));
 
             foreach (var command in commands)
                 AddCommand(command);
@@ -39,8 +47,11 @@ namespace UniBot.Core.AspNetCore
             return this;
         }
 
-        public void Build()
-            => _bot.InitializeMessengers(_services);
+        public IBot Build()
+        {
+            _bot.InitializeMessengers();
+            return _bot;
+        }
 
         public BotBuilder AddCommand<TCommand>()
             where TCommand : CommandBase
@@ -52,8 +63,8 @@ namespace UniBot.Core.AspNetCore
         public BotBuilder DetectMessengerImplementations()
         {
             var assemblies = AppDomain.CurrentDomain
-                                      .GetAssemblies()
-                                      .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
+                .GetAssemblies()
+                .Where(ass => ass.GetCustomAttribute<MessengerImplAttribute>() != null);
 
             foreach (var assembly in assemblies)
                 AddMessengerImplementation(assembly);
@@ -64,10 +75,6 @@ namespace UniBot.Core.AspNetCore
         public BotBuilder AddMessengerImplementation(Assembly assembly)
         {
             _bot.AddMessengerImplementation(assembly);
-            
-            var builder = _services.AddControllers();
-            builder.AddApplicationPart(assembly);
-
             return this;
         }
 
@@ -76,10 +83,8 @@ namespace UniBot.Core.AspNetCore
             var instance = (CommandBase?) Activator.CreateInstance(command);
             if (instance == null)
                 throw new Exception("Couldn't create a command instance");
-            
+
             _bot.AddCommand(instance);
         }
-        
-        
     }
 }

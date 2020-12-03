@@ -10,12 +10,6 @@ namespace UniBot.Core.Models.Attachments
             Type = type;
         }
 
-        public FileAttachment(string pathToFile, AttachmentType type)
-        {
-            FileInfo = new FileInfo(pathToFile);
-            Type = type;
-        }
-
         public string Name => FileInfo.Name;
         public string Extension => FileInfo.Extension;
         public string FullName => FileInfo.FullName;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using UniBot.Core;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Helpers;
 using UniBot.Core.Models;
@@ -18,17 +19,19 @@ using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
 using TgChatType = Telegram.Bot.Types.Enums.ChatType;
 
-namespace UniBot.Telegram
+namespace UniBot.AspNetCore.Telegram
 {
     public class TgMessenger : IMessenger
     {
         private readonly ITelegramBotClient _api;
         private readonly TgOptions _options;
+        private readonly HttpClient _client;
 
-        public TgMessenger(ITelegramBotClient api, TgOptions options)
+        public TgMessenger(ITelegramBotClient api, TgOptions options, HttpClient? client = null)
         {
             _api = api;
             _options = options;
+            _client = client ?? new HttpClient();
         }
 
         public string Name => TgConstants.Name;
@@ -117,9 +120,7 @@ namespace UniBot.Telegram
         {
             var file = await _api.GetFileAsync(inAttachment.Id).ConfigureAwait(false);
             var url = $"https://api.telegram.org/file/bot{_options.Token}/{file.FilePath}";
-            // Todo Change Attachment system.
-            using var client = new HttpClient();
-            var response = await client.GetByteArrayAsync(url).ConfigureAwait(false);
+            var response = await _client.GetByteArrayAsync(url).ConfigureAwait(false);
 
             // Todo Refactor this.
             int index = file.FilePath.LastIndexOf('/');

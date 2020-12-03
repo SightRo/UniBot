@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Actions;
+using UniBot.Core.Models;
 
 namespace UniBot.Core.Utils
 {
@@ -17,7 +18,7 @@ namespace UniBot.Core.Utils
 
         public void Enqueue(JobItem job)
         {
-            _channel.Writer.WriteAsync(job).GetAwaiter().GetResult();
+            _channel.Writer.TryWrite(job);
         }
 
         private void InitializeThreads(int threadCount)

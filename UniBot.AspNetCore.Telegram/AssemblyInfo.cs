@@ -1,4 +1,4 @@
 ﻿using UniBot.Core.Annotations;
-using UniBot.Telegram;
+using UniBot.AspNetCore.Telegram;
 
 [assembly: MessengerImpl(TgConstants.Name)]

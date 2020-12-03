@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+using UniBot.Core.Abstraction;
 using UniBot.Core.Actions;
 using UniBot.Core.Annotations;
+using UniBot.Core.Models;
 using UniBot.Core.Options;
 using UniBot.Core.Utils;
 
-namespace UniBot.Core.Abstraction
+namespace UniBot.Core
 {
-    public class Bot
+    public class Bot : IBot
     {
-        private readonly Dictionary<string, CommandBase> _commands = new Dictionary<string, CommandBase>();
-        private readonly Dictionary<string, IMessenger> _messengers = new Dictionary<string, IMessenger>();
-        private readonly List<IMessengerStartup> _messengerStartups = new List<IMessengerStartup>();
+        private readonly Dictionary<string, CommandBase> _commands = new();
+        private readonly Dictionary<string, IMessenger> _messengers = new();
+        private readonly List<IMessengerStartup> _messengerStartups = new();
         private readonly JobQueue _jobQueue;
         
         public Bot(BotOptions botOptions)
@@ -53,11 +54,11 @@ namespace UniBot.Core.Abstraction
                 throw new Exception($"IMessenger {name} is missed.");
         }
 
-        public void InitializeMessengers(IServiceCollection services)
+        public void InitializeMessengers()
         {
             foreach (var startup in _messengerStartups)
             {
-                startup.Init(this, services, out var messenger);
+                startup.Init(this, out var messenger);
                 AddToCollection(_messengers, new KeyValuePair<string, IMessenger>(messenger.Name, messenger));
             }
         }

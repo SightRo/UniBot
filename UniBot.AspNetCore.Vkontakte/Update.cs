@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace UniBot.Vkontakte
+namespace UniBot.AspNetCore.Vkontakte
 {
     [Serializable]
     public class Update

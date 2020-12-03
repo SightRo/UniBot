@@ -1,9 +1,9 @@
 ﻿using UniBot.Core.Options;
 
-namespace UniBot.Vkontakte
+namespace UniBot.AspNetCore.Vkontakte
 {
     public class VkOptions : MessengerOptions
     {
-        public ulong GroupId { get; set; } = 0;
+        public ulong GroupId { get; init; } = 0;
     }
 }

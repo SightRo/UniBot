@@ -6,8 +6,8 @@ namespace UniBot.Core.Helpers
 {
     public class KeyboardBuilder
     {
-        private readonly Lazy<List<List<ReplyButton>>> _replyButtons = new Lazy<List<List<ReplyButton>>>();
-        private readonly Lazy<List<List<InlineButton>>> _inlineButtons = new Lazy<List<List<InlineButton>>>();
+        private readonly Lazy<List<List<ReplyButton>>> _replyButtons = new();
+        private readonly Lazy<List<List<InlineButton>>> _inlineButtons = new();
         private bool _isInline = false;
         private bool _isOneTime = false;
         private int _currentLine = 0;

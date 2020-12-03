@@ -4,19 +4,20 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using UniBot.Core.Abstraction;
 using UniBot.Core.Annotations;
+using UniBot.Core.Models;
 using TgMessage = Telegram.Bot.Types.Message;
 using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
 
-namespace UniBot.Telegram
+namespace UniBot.AspNetCore.Telegram
 {
     [UpdateReceiver(TgConstants.Name)]
     [Route(TgConstants.Endpoint)]
     public class TgReceiver : ControllerBase
     {
-        private readonly Bot _bot;
+        private readonly IBot _bot;
 
-        public TgReceiver(Bot bot)
+        public TgReceiver(IBot bot)
         {
             _bot = bot;
         }

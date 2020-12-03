@@ -19,7 +19,7 @@ using VkPhoto = VkNet.Model.Attachments.Photo;
 using VkGroup = VkNet.Model.Group;
 using VkUser = VkNet.Model.User;
 
-namespace UniBot.Vkontakte
+namespace UniBot.AspNetCore.Vkontakte
 {
     internal static class VkConverter
     {

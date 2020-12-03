@@ -42,7 +42,7 @@ namespace UniBot.Core.Utils
             if (type.GetConstructor(Type.EmptyTypes) != null)
                 return Activator.CreateInstance(type) as TType;
 
-            throw new Exception("No available parameterless constructor");
+            throw new ArgumentException("No available parameterless constructor", nameof(type));
         }
     }
 }
