@@ -14,6 +14,7 @@ using TgMessage = Telegram.Bot.Types.Message;
 using TgUser = Telegram.Bot.Types.User;
 using TgChat = Telegram.Bot.Types.Chat;
 using TgChatType = Telegram.Bot.Types.Enums.ChatType;
+using TgChatPermissions = Telegram.Bot.Types.ChatPermissions;
 
 namespace UniBot.AspNetCore.Telegram
 {
@@ -28,18 +29,19 @@ namespace UniBot.AspNetCore.Telegram
             return new InMessage(
                 message.MessageId,
                 TgConstants.Name,
-                message.Date,
-                message.From.Id,
                 message.Chat.Id,
-                message.Text ?? message.Caption,
-                ToMessage(message.ReplyToMessage),
-                null,
-                ExtractAttachments(message));
+                message.From.Id,
+                message.Date)
+            {
+                Text = message.Text ?? message.Caption,
+                Reply = ToMessage(message.ReplyToMessage),
+                Attachments = ExtractAttachments(message)
+            };
         }
 
         public static Chat ToChat(TgChat chat, long ownerId)
         {
-            ImmutableList<InAttachment>? photos = null;
+            ImmutableList<InAttachment> photos = ImmutableList<InAttachment>.Empty;
             if (chat.Photo != null)
             {
                 photos = ImmutableList.Create(
@@ -55,15 +57,16 @@ namespace UniBot.AspNetCore.Telegram
                 _ => ChatType.Group
             };
 
-
             return new Chat(
                 chat.Id,
                 TgConstants.Name,
                 chat.Title ?? chat.Username,
                 ownerId,
-                type,
-                photos,
-                ToMessage(chat.PinnedMessage));
+                type)
+            {
+                PinnedMessage = ToMessage(chat.PinnedMessage),
+                Photos = photos
+            };
         }
 
         public static User ToUser(TgChat chat)
@@ -71,10 +74,12 @@ namespace UniBot.AspNetCore.Telegram
             return new User(
                 chat.Id,
                 TgConstants.Name,
-                chat.Username,
-                chat.FirstName,
-                chat.LastName,
-                true);
+                true)
+            {
+                FirstName = chat.FirstName,
+                LastName = chat.LastName,
+                Username = chat.Username
+            };
         }
 
         public static User ToUser(TgUser user)
@@ -82,10 +87,12 @@ namespace UniBot.AspNetCore.Telegram
             return new User(
                 user.Id,
                 TgConstants.Name,
-                user.Username,
-                user.FirstName,
-                user.LastName,
-                !user.IsBot);
+                !user.IsBot)
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username
+            };
         }
 
         public static IReplyMarkup? ToTgKeyboard(InlineKeyboard? keyboard)

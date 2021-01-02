@@ -6,10 +6,6 @@ namespace UniBot.Core.Models
 {
     public class OutMessage
     {
-        public OutMessage()
-        {
-        }
-
         public OutMessage(
             string text, 
             IKeyboard? keyboard = null, 
@@ -32,7 +28,7 @@ namespace UniBot.Core.Models
         {
         }
 
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public bool RemoveReplyKeyboard { get; set; }
         public IKeyboard? Keyboard { get; set; }
         public ICollection<IOutAttachment> Attachments { get; set; }

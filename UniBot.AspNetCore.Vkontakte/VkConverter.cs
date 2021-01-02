@@ -30,7 +30,7 @@ namespace UniBot.AspNetCore.Vkontakte
 
             // Need to explicitly declare type to avoid warning.
             ImmutableList<InMessage> forwardedMessages = message.ForwardedMessages
-                .Where(m => !(m is null))
+                .Where(m => m is not null)
                 .Select(ToInMessage)
                 .ToImmutableList()!;
 
@@ -41,13 +41,15 @@ namespace UniBot.AspNetCore.Vkontakte
             return new InMessage(
                 (long) message.Id!,
                 VkConstants.Name,
-                message.Date!.Value,
-                message.FromId!.Value,
                 message.PeerId!.Value,
-                message.Text,
-                ToInMessage(message.ReplyMessage),
-                forwardedMessages,
-                attachments);
+                message.FromId!.Value,
+                message.Date!.Value)
+            {
+                Text = message.Text,
+                Reply = ToInMessage(message.ReplyMessage),
+                Forwarded = forwardedMessages,
+                Attachments = attachments
+            };
         }
 
         // Use only when sure it's chat is of type Chat 
@@ -69,9 +71,11 @@ namespace UniBot.AspNetCore.Vkontakte
                 VkConstants.Name,
                 chat.ChatSettings.Title,
                 chat.ChatSettings.OwnerId,
-                type,
-                ToInAttachment(chat.ChatSettings.Photo),
-                ToInMessage(chatId, chat.ChatSettings.PinnedMessage));
+                type)
+            {
+                Photos = ToInAttachment(chat.ChatSettings.Photo),
+                PinnedMessage = ToInMessage(chatId, chat.ChatSettings.PinnedMessage)
+            };
         }
 
         // Use only when sure it's chat is of type User 
@@ -80,17 +84,13 @@ namespace UniBot.AspNetCore.Vkontakte
             if (user is null)
                 return null;
 
-
+            // Get avatar of user
             return new Chat(
                 chatId,
                 VkConstants.Name,
-                // Is there any fix for that?
-                user.FirstName + user.LastName ?? user.Username ?? "Chat",
+                user.LastName + user.FirstName ?? user.Username ?? "User",
                 chatId,
-                ChatType.Private,
-                // Todo Find way to get user photo
-                null,
-                null);
+                ChatType.Private);
         }
 
         public static InAttachment ToInAttachment(VkAttachment attachment)
@@ -175,10 +175,11 @@ namespace UniBot.AspNetCore.Vkontakte
             return new User(
                 group.Id,
                 VkConstants.Name,
-                group.ScreenName,
-                group.Name,
-                null,
-                false);
+                false)
+            {
+                Username = group.ScreenName,
+                FirstName = group.Name
+            };
         }
 
         public static User ToUser(VkUser user)
@@ -186,10 +187,12 @@ namespace UniBot.AspNetCore.Vkontakte
             return new User(
                 user.Id,
                 VkConstants.Name,
-                user.ScreenName,
-                user.FirstName,
-                user.LastName,
-                true);
+                true)
+            {
+                Username = user.ScreenName,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
         }
 
         public static MessageKeyboard? ToVkKeyboard(ReplyKeyboard? keyboard)
@@ -244,13 +247,14 @@ namespace UniBot.AspNetCore.Vkontakte
             return new InMessage(
                 message.Id,
                 VkConstants.Name,
-                message.Date,
-                message.FromId,
                 chatId,
-                message.Text,
-                null,
-                forwardedMessages,
-                attachments);
+                message.FromId,
+                message.Date)
+            {
+                Text = message.Text,
+                Forwarded = forwardedMessages,
+                Attachments = attachments
+            };
         }
     }
 }

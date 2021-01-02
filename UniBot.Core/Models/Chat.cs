@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using UniBot.Core.Annotations;
 using UniBot.Core.Models.Attachments;
 
 namespace UniBot.Core.Models
@@ -10,22 +11,20 @@ namespace UniBot.Core.Models
             string messengerSource,
             string title,
             long ownerId,
-            ChatType type,
-            ImmutableList<InAttachment>? photos,
-            InMessage? pinnedMessage)
+            ChatType type)
             : base(id, messengerSource)
         {
             Title = title;
             OwnerId = ownerId;
             Type = type;
-            Photos = photos ?? ImmutableList<InAttachment>.Empty;
-            PinnedMessage = pinnedMessage;
+            //Permissions = permissions;
         }
 
-        public string Title { get; init; }
-        public long OwnerId { get; init; }
-        public ChatType Type { get; init; }
-        public ImmutableList<InAttachment> Photos { get; init; }
+        public string Title { get; }
+        public long OwnerId { get; }
+        public ChatType Type { get; }
+        //public ChatPermissions Permissions { get; }
         public InMessage? PinnedMessage { get; init; }
+        public ImmutableList<InAttachment> Photos { get; init; } = ImmutableList<InAttachment>.Empty;
     }
 }

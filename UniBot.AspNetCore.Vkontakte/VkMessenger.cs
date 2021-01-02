@@ -134,7 +134,7 @@ namespace UniBot.AspNetCore.Vkontakte
                 if (!await IsBotAdmin(chatId).ConfigureAwait(false))
                 {
                     // Todo Make configurable behavior for those kind of cases
-                    var message = new OutMessage {Text = "Бот не может работать корректно без прав администратора."};
+                    var message = new OutMessage("Бот не может работать корректно без прав администратора.");
                     await SendMessage(chatId, message).ConfigureAwait(false);
                 }
 
