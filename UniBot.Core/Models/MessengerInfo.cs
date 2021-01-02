@@ -11,9 +11,9 @@ namespace UniBot.Core.Models
             Options = options;
         }
 
-        public string Name { get; init; }
-        public object Api { get; init; }
-        public MessengerOptions Options { get; init; }
+        public string Name { get; }
+        public object Api { get; }
+        public MessengerOptions Options { get; }
         // public SupportedApi SupportedApi { get; init; }
     }
 }

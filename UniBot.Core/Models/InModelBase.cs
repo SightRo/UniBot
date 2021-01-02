@@ -4,10 +4,10 @@
     {
         public InModelBase(TId id, string messengerSource)
         {
-            Identifier = new Identifier<TId>(id, messengerSource);
+            Identifier = new (id, messengerSource);
         }
 
-        public Identifier<TId> Identifier { get; init; }
+        public Identifier<TId> Identifier { get; }
         public TId Id => Identifier.Id;
         public string MessengerSource => Identifier.Messenger;
     }
