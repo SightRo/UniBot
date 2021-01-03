@@ -18,11 +18,13 @@ namespace UniBot.Core.Helpers
             return new FileAttachment(file, type);
         }
 
-        public static MemoryAttachment CreateMemoryAttachment(string fullName, byte[] data,
+        public static MemoryAttachment CreateMemoryAttachment(
+            string fullName, 
+            byte[] data,
             AttachmentType type = AttachmentType.Unknown)
         {
-            var name = GetName(fullName);
-            var extension = GetExtension(fullName);
+            var name = Path.GetFileNameWithoutExtension(fullName);
+            var extension = Path.GetExtension(fullName);
             type = type == AttachmentType.Unknown ? DetectType(extension) : type;
 
             return new MemoryAttachment(name, extension, type, data);
@@ -55,30 +57,6 @@ namespace UniBot.Core.Helpers
                 default:
                     return AttachmentType.Document;
             }
-        }
-
-        private static string GetName(string fullName, char delimiter = '.')
-        {
-            if (string.IsNullOrWhiteSpace(fullName))
-                return string.Empty;
-
-            int index = fullName.LastIndexOf(delimiter);
-            if (index > 0)
-                return fullName.Substring(0, index);
-
-            return string.Empty;
-        }
-
-        private static string GetExtension(string fullName, char delimiter = '.')
-        {
-            if (string.IsNullOrEmpty(fullName))
-                return string.Empty;
-
-            int index = fullName.LastIndexOf(delimiter);
-            if (index > 0)
-                return fullName.Substring(index, fullName.Length - index);
-
-            return string.Empty;
         }
     }
 }
