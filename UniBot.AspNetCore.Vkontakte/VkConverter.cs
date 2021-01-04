@@ -30,7 +30,7 @@ namespace UniBot.AspNetCore.Vkontakte
 
             // Need to explicitly declare type to avoid warning.
             ImmutableList<InMessage> forwardedMessages = message.ForwardedMessages
-                .Where(m => m is not null)
+                .Where(m => m != null)
                 .Select(ToInMessage)
                 .ToImmutableList()!;
 
@@ -81,7 +81,7 @@ namespace UniBot.AspNetCore.Vkontakte
         // Use only when sure it's chat is of type User 
         public static Chat? ToChat(long chatId, User? user)
         {
-            if (user is null)
+            if (user == null)
                 return null;
 
             // Get avatar of user
@@ -238,7 +238,7 @@ namespace UniBot.AspNetCore.Vkontakte
                 return null;
 
             ImmutableList<InMessage> forwardedMessages = message.ForwardMessages
-                .Where(m => !(m is null))
+                .Where(m => m != null)
                 .Select(ToInMessage)
                 .ToImmutableList()!;
 

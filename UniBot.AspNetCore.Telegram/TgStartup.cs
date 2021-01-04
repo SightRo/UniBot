@@ -13,7 +13,7 @@ namespace UniBot.AspNetCore.Telegram
     {
         public void Init(IBot bot, out IMessenger messenger)
         {
-            var tgOptions = bot.BotOptions.MessengerOptions[TgConstants.Name].Get<TgOptions>();
+            var tgOptions = bot.BotOptions.MessengersOptions[TgConstants.Name].Get<TgOptions>();
 
             var proxy = GetProxy(tgOptions);
             var api = proxy != null
@@ -24,7 +24,7 @@ namespace UniBot.AspNetCore.Telegram
             {
                 api.SetWebhookAsync(bot.BotOptions.Endpoint + TgConstants.Endpoint).GetAwaiter().GetResult();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new Exception("Couldn't set telegram webhook", e);
             }
@@ -34,12 +34,12 @@ namespace UniBot.AspNetCore.Telegram
 
         private IWebProxy? GetProxy(TgOptions options)
         {
-            if (options.Socks5 is null)
+            if (options.Socks5 == null)
                 return null;
 
             var socks5 = options.Socks5;
 
-            return socks5.Username is null || socks5.Password is null
+            return socks5.Username == null || socks5.Password == null
                 ? new HttpToSocks5Proxy(socks5.Hostname, socks5.Port)
                 : new HttpToSocks5Proxy(socks5.Hostname, socks5.Port, socks5.Username, socks5.Password);
         }

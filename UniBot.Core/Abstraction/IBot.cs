@@ -9,12 +9,12 @@ namespace UniBot.Core.Abstraction
     {
         BotOptions BotOptions { get; }
         void ProcessUpdate(UpdateContext context);
-        CommandBase? GetCommand(string commandName);
+        Command? GetCommand(string commandName);
         IMessenger ResolveMessenger(string name);
         void InitializeMessengers();
         void AddMessengerImplementation(Assembly assembly);
 
         void AddCommand<TCommand>(TCommand command)
-            where TCommand : CommandBase;
+            where TCommand : Command;
     }
 }

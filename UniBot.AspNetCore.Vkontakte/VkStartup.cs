@@ -17,7 +17,7 @@ namespace UniBot.AspNetCore.Vkontakte
 
         public void Init(IBot bot, out IMessenger messenger)
         {
-            var vkOptions = bot.BotOptions.MessengerOptions[VkConstants.Name].Get<VkOptions>();
+            var vkOptions = bot.BotOptions.MessengersOptions[VkConstants.Name].Get<VkOptions>();
 
             var api = new VkApi();
             api.Authorize(new ApiAuthParams
@@ -25,7 +25,7 @@ namespace UniBot.AspNetCore.Vkontakte
                 AccessToken = vkOptions.Token
             });
             api.RequestsPerSecond = 20;
-            
+
             DeleteCallbackServer(api, vkOptions);
             var confirmationCode = AddCallbackServer(api, bot.BotOptions, vkOptions);
 
@@ -38,16 +38,16 @@ namespace UniBot.AspNetCore.Vkontakte
                 .FirstOrDefault(s => string.CompareOrdinal(s.Title, ServerName) == 0);
 
             if (server != null)
-                api.Groups.DeleteCallbackServer(options.GroupId, (ulong)server.Id);
+                api.Groups.DeleteCallbackServer(options.GroupId, (ulong) server.Id);
         }
 
         private string AddCallbackServer(VkApi api, BotOptions botOptions, VkOptions options)
         {
-            var serverId = api.Groups.AddCallbackServer(options.GroupId, 
-                botOptions.Endpoint + VkConstants.Endpoint, 
-                "UniBot.Vk", 
+            var serverId = api.Groups.AddCallbackServer(options.GroupId,
+                botOptions.Endpoint + VkConstants.Endpoint,
+                "UniBot.Vk",
                 null);
-            
+
             api.Groups.SetCallbackSettings(new CallbackServerParams
             {
                 GroupId = options.GroupId,
@@ -60,6 +60,6 @@ namespace UniBot.AspNetCore.Vkontakte
             });
 
             return api.Groups.GetCallbackConfirmationCode(options.GroupId);
-        } 
+        }
     }
 }

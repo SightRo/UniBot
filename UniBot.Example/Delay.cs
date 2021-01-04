@@ -6,7 +6,7 @@ using UniBot.Core.Models;
 
 namespace UniBot.Example
 {
-    public class Delay : CommandBase
+    public class Delay : Command
     {
         public override string Name { get; } = "Delay";
         public override string? Description { get; } = null;

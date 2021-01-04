@@ -5,7 +5,7 @@ using UniBot.Core.Models;
 
 namespace UniBot.Example
 {
-    public class Hello : CommandBase
+    public class Hello : Command
     {
         public override string Name { get; } = "Hello";
         public override string? Description { get; } = "None.";
