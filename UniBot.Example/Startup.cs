@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using UniBot.AspNetCore;
+using UniBot.Core.Options;
 
 namespace UniBot.Example
 {
@@ -25,6 +26,7 @@ namespace UniBot.Example
             services.AddUniBot(builder =>
                 builder.DetectMessengerImplementations()
                     .DetectCommands()
+                    .WithOptions(Configuration.GetSection("BotSettings").Get<BotOptions>())
                     .Build()
             );
         }

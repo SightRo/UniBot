@@ -12,11 +12,11 @@ namespace UniBot.Core
 {
     public class Bot : IBot
     {
-        private readonly Dictionary<string, CommandBase> _commands = new();
+        private readonly Dictionary<string, Command> _commands = new();
         private readonly Dictionary<string, IMessenger> _messengers = new();
-        private readonly List<IMessengerStartup> _messengerStartups = new();
+        private readonly Dictionary<string, IMessengerStartup> _messengerStartups = new();
         private readonly JobQueue _jobQueue;
-        
+
         public Bot(BotOptions botOptions)
         {
             BotOptions = botOptions;
@@ -24,22 +24,22 @@ namespace UniBot.Core
         }
 
         public BotOptions BotOptions { get; }
-        public IReadOnlyDictionary<string, CommandBase> Commands => _commands;
+        public IReadOnlyDictionary<string, Command> Commands => _commands;
         public IReadOnlyDictionary<string, IMessenger> Messengers => _messengers;
 
         public void ProcessUpdate(UpdateContext context)
         {
-            if (context.Message != null && CommandBase.TryParseCommand(context.Message.Text, out var commandName))
+            if (context.Message != null && Command.TryParseCommand(context.Message.Text, out var commandName))
             {
                 var command = GetCommand(commandName);
-                if (command is null)
+                if (command == null)
                     return;
-                
+
                 _jobQueue.Enqueue(new JobItem(command, context));
             }
         }
 
-        public CommandBase? GetCommand(string commandName)
+        public Command? GetCommand(string commandName)
         {
             if (Commands.TryGetValue(commandName, out var command))
                 return command;
@@ -56,62 +56,33 @@ namespace UniBot.Core
 
         public void InitializeMessengers()
         {
-            foreach (var startup in _messengerStartups)
+            foreach (var item in _messengerStartups)
             {
-                startup.Init(this, out var messenger);
-                AddToCollection(_messengers, new KeyValuePair<string, IMessenger>(messenger.Name, messenger));
+                item.Value.Init(this, out var messenger);
+                _messengers.Add(item.Key, messenger);
             }
         }
 
         public void AddMessengerImplementation(Assembly assembly)
         {
-            if (!Reflector.CheckAssemblyAttribute<MessengerImplAttribute>(assembly))
-                throw new Exception("Assembly doesn't implement any messenger");
+            var messengerName = Reflector.FindAssemblyAttribute<MessengerImplAttribute>(assembly).Name;
+            var startupType = Reflector.FindInterfaceImplementation(assembly, nameof(IMessengerStartup));
 
-            var startupType = GetInterfaceImplementation(assembly, nameof(IMessengerStartup));
-            GetInterfaceImplementation(assembly, nameof(IMessenger));
-            GetAttributeUsage<UpdateReceiverAttribute>(assembly);
+
+            // Check presents of necessary attributes/implementations
+            // Otherwise throw an exception
+            Reflector.FindInterfaceImplementation(assembly, nameof(IMessenger));
+            Reflector.FindSubType(assembly, typeof(MessengerOptions));
+            Reflector.FindTypeWithAttribute<UpdateReceiverAttribute>(assembly);
 
             var startup = Reflector.GetInstance<IMessengerStartup>(startupType);
-            AddToCollection(_messengerStartups, startup);
+            _messengerStartups.Add(messengerName, startup);
         }
 
         public void AddCommand<TCommand>(TCommand command)
-            where TCommand : CommandBase
-            => AddToCollection(_commands, new KeyValuePair<string, CommandBase>(command.Name, command));
-
-        private void AddToCollection<TValue>(ICollection<TValue> collection, TValue value)
-            where TValue : notnull
+            where TCommand : Command
         {
-            if (collection.Contains(value))
-                throw new Exception("This object has been added");
-
-            collection.Add(value);
-        }
-
-        private Type GetInterfaceImplementation(Assembly assembly, string interfaceName)
-        {
-            var implementations = Reflector.FindInterfaceImplementations(assembly, interfaceName);
-
-            if (implementations.Count == 0)
-                throw new Exception("Not found necessary interface");
-            if (implementations.Count > 1)
-                throw new Exception("Found more than one interface implementation");
-
-            return implementations[0];
-        }
-
-        private Type GetAttributeUsage<TAttribute>(Assembly assembly)
-            where TAttribute : Attribute
-        {
-            var usages = Reflector.FindAttributeUsage<TAttribute>(assembly);
-
-            if (usages.Count == 0)
-                throw new Exception("Not found necessary type with attribute");
-            if (usages.Count > 1)
-                throw new Exception("Found more than one type with attribute");
-
-            return usages[0];
+            _commands.Add(command.Name, command);
         }
     }
 }
