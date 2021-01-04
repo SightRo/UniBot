@@ -75,7 +75,7 @@ namespace UniBot.Core
             Reflector.FindSubType(assembly, typeof(MessengerOptions));
             Reflector.FindTypeWithAttribute<UpdateReceiverAttribute>(assembly);
 
-            var startup = Reflector.GetInstance<IMessengerStartup>(startupType);
+            var startup = (IMessengerStartup) Reflector.GetInstance(startupType);
             _messengerStartups.Add(messengerName, startup);
         }
 

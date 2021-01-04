@@ -83,31 +83,36 @@ namespace UniBot.Core.Utils
         {
             var type = typeof(TType);
 
+            return (TType) GetInstance(type, constructorParameters);
+        }
+
+        public static object GetInstance(Type targetType, params object[] constructorParameters)
+        {
             if (constructorParameters.Length > 0)
             {
-                var constructor = type.GetConstructor(
+                var constructor = targetType.GetConstructor(
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     null,
                     constructorParameters.Select(o => o.GetType()).ToArray(),
                     null);
 
                 if (constructor == null)
-                    throw new ArgumentException($"{type} doesn't have constructor with specified parameters");
+                    throw new ArgumentException($"{targetType} doesn't have constructor with specified parameters");
 
-                return (TType) constructor.Invoke(constructorParameters);
+                return constructor.Invoke(constructorParameters);
             }
 
-            var parameterlessConstructor = type.GetConstructor(
+            var parameterlessConstructor = targetType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 null,
                 Type.EmptyTypes,
                 null);
 
             if (parameterlessConstructor == null)
-                throw new ArgumentException($"{type} doesn't have parameterless constructor.");
+                throw new ArgumentException($"{targetType} doesn't have parameterless constructor.");
 
-            return (TType) (Activator.CreateInstance(type, true) ??
-                            throw new ArgumentException($"Can not create an instance of {type}"));
+            return Activator.CreateInstance(targetType, true) ??
+                   throw new ArgumentException($"Can not create an instance of {targetType}");
         }
 
         public static Type? FindSubType(Assembly assembly, Type type)
